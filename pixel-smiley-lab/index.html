@@ -87,7 +87,20 @@ kbd{font:.75rem var(--mono);padding:1px 5px;border:1px solid var(--line);border-
 .who strong{color:#fff}
 .who button{padding:4px 10px;font-size:.8rem;background:transparent;color:#d8d2c0;border-color:#4a4537}
 /* start + finish */
-.start{max-width:520px;margin:24px auto}
+.start{max-width:760px;margin:24px auto;padding:24px}
+.start .q{font:800 clamp(1.6rem,4vw,2.2rem)/1.1 var(--display);margin:0 0 10px;text-wrap:balance}
+.start .lead{color:var(--fg);font-size:1.05rem}
+.start h3{font:800 1.1rem var(--display);margin:18px 0 8px}
+.start p{max-width:65ch}
+.demo{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;margin:16px 0 18px}
+.demo figure{margin:0;display:grid;gap:6px;justify-items:center}
+.demo figcaption{font:600 .8rem var(--mono);color:var(--muted)}
+.inch{width:96px;height:96px;outline:2.5px solid var(--major);background-color:var(--bg);
+  background-image:linear-gradient(to right,var(--minor) 1px,transparent 1px),linear-gradient(to bottom,var(--minor) 1px,transparent 1px);
+  background-size:calc(96px / var(--d)) calc(96px / var(--d))}
+.demo-cap{flex-basis:100%;margin:0;font:.8rem var(--mono);color:var(--muted)}
+.how{margin:0 0 18px;padding-left:1.3em;display:grid;gap:8px;max-width:65ch}
+.start .fine{font-size:.85rem;color:var(--muted);margin:10px 0 0}
 .start label{display:block;font-weight:700;margin-bottom:6px}
 .start .row{display:flex;gap:10px;flex-wrap:wrap}
 .start input{flex:1 1 220px;min-width:0;font:600 1.1rem var(--body);padding:10px 12px;border:2px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
@@ -108,11 +121,28 @@ kbd{font:.75rem var(--mono);padding:1px 5px;border:1px solid var(--line);border-
 <div class="wrap">
   <section id="startView" class="card start" hidden>
     <div class="eyebrow">Before you start</div>
-    <h2>Same 5 in square. More pixels per inch.</h2>
-    <p>You'll paint the same smiley at 5, 10, 20 and 25 ppi. Your name goes on the completion certificate you submit in Canvas.</p>
+    <h2 class="q">What size is a pixel?</h2>
+    <p class="lead">It depends on the resolution. Resolution, measured in pixels per inch (ppi), is how many times an inch is divided up. At 5 ppi each pixel is 1/5 of an inch wide. At 25 ppi each pixel is only 1/25 of an inch.</p>
+    <div class="demo" aria-hidden="true">
+      <figure><div class="inch" style="--d:5"></div><figcaption>5 ppi</figcaption></figure>
+      <figure><div class="inch" style="--d:10"></div><figcaption>10 ppi</figcaption></figure>
+      <figure><div class="inch" style="--d:20"></div><figcaption>20 ppi</figcaption></figure>
+      <figure><div class="inch" style="--d:25"></div><figcaption>25 ppi</figcaption></figure>
+      <p class="demo-cap">One inch, divided four ways</p>
+    </div>
+    <p class="lead">Pixels are always square. When there are only a few per inch, those square edges show, and curves look blocky and pixelated. With more pixels per inch, the squares get small enough to blend together, and the same curve looks round and smooth.</p>
+    <h3>How this works</h3>
+    <ol class="how">
+      <li><strong>Do the math.</strong> Solve the resolution equation to unlock each canvas.</li>
+      <li><strong>Paint the smiley.</strong> Click and drag to fill pixels. Hold Alt (Option on Mac) and drag to erase. Pick a bigger brush size when you need it.</li>
+      <li><strong>Paint at least 25%.</strong> Once a quarter of the smiley's pixels are yours, click <strong>Fill in the answer</strong> to complete the level.</li>
+      <li><strong>Repeat at 5, 10, 20 and 25 ppi.</strong> The canvas is 5 inches every time. Only the number of pixels changes.</li>
+      <li><strong>Save your certificate.</strong> At the end, download your certificate (PNG). You'll upload it to Canvas with a short reflection quiz.</li>
+    </ol>
     <label for="nameIn">Your first name</label>
     <div class="row"><input id="nameIn" autocomplete="given-name" maxlength="40"><button class="primary" id="startBtn">Start</button></div>
     <div class="msg bad" id="nameMsg" role="status"></div>
+    <p class="fine">Your progress saves in this browser, so finish on the same computer.</p>
   </section>
 
   <nav class="steps" id="steps" aria-label="Levels" hidden></nav>
