@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pixel Smiley Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+html,body{margin:0}
+/* Layout: black course header, level stepper, canvas (fixed 5 in) beside a tool panel; Compare view lines every level up at the same size */
+:root{
+  --bg:#f6f4ee; --surface:#ffffff; --fg:#17150f; --muted:#6b6553; --line:#ddd6c3;
+  --gold:#f0b82d; --gold-ink:#8a6400; --ink:#17150f; --guide:rgba(23,21,15,.16);
+  --ok:#2f7d4a; --bad:#c2412d; --minor:rgba(90,80,60,.28); --major:#8a6400;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12110d; --surface:#1c1a15; --fg:#f2eee2; --muted:#a59d87; --line:#34302a;
+  --gold:#f0b82d; --gold-ink:#f0b82d; --ink:#f2eee2; --guide:rgba(242,238,226,.18);
+  --ok:#5fbf7f; --bad:#ef7462; --minor:rgba(242,238,226,.22); --major:#f0b82d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12110d; --surface:#1c1a15; --fg:#f2eee2; --muted:#a59d87; --line:#34302a;
+  --gold:#f0b82d; --gold-ink:#f0b82d; --ink:#f2eee2; --guide:rgba(242,238,226,.18);
+  --ok:#5fbf7f; --bad:#ef7462; --minor:rgba(242,238,226,.22); --major:#f0b82d; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+header{background:#000;color:#fff;border-bottom:6px solid var(--gold);padding:18px 16px}
+header .in{max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+header h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(1.5rem,4vw,2.1rem);letter-spacing:-.01em}
+header p{margin:0;color:#d8d2c0;font-size:.95rem}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.step{font:600 .9rem var(--mono);padding:8px 12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.step[aria-current="true"]{border-color:var(--gold);box-shadow:inset 0 -3px 0 var(--gold)}
+.step:disabled{opacity:.45;cursor:not-allowed}
+.step .dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.step.done .dot{background:var(--ok)}
+.step:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+[hidden]{display:none!important}
+.lab{display:grid;grid-template-columns:min(900px,max(560px,calc(100vh - 150px)),calc(100vw - 400px)) 340px;gap:28px;align-items:start;justify-content:center}
+@media (max-width:980px){.lab{grid-template-columns:minmax(0,1fr)}}
+.board{min-width:0;width:100%}
+.ruler{position:relative;height:26px;font:600 .72rem var(--mono);color:var(--muted)}
+.ruler span{position:absolute;bottom:4px;transform:translateX(-50%)}
+.ruler i{position:absolute;bottom:0;width:1px;height:6px;background:var(--muted)}
+.ruler i.big{height:12px}
+.frame{position:relative;width:100%;aspect-ratio:1;background:var(--surface);outline:1px solid var(--line)}
+.frame canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.lock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;background:color-mix(in srgb,var(--bg) 82%,transparent);font-weight:600}
+.cap{display:flex;justify-content:space-between;gap:12px;margin-top:8px;font:.8rem var(--mono);color:var(--muted);flex-wrap:wrap}
+.panel{display:grid;gap:18px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px}
+.card h2{margin:0 0 6px;font-family:var(--display);font-size:1.15rem;font-weight:800}
+.card p{margin:0 0 10px;color:var(--muted);max-width:60ch}
+.eyebrow{font:600 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:4px}
+.eq{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:600 1.05rem var(--mono)}
+.eq input{width:6.5ch;font:600 1.05rem var(--mono);padding:6px 8px;border:2px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);text-align:center}
+.eq input.right{border-color:var(--ok)}
+.eq input.wrong{border-color:var(--bad)}
+.msg{font-size:.92rem;margin-top:8px;min-height:1.4em}
+.msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+button{font:600 .92rem var(--body);padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.primary{background:var(--gold);color:#000;border-color:var(--gold)}
+button:disabled{opacity:.45;cursor:not-allowed}
+kbd{font:.75rem var(--mono);padding:1px 5px;border:1px solid var(--line);border-radius:4px;color:var(--muted)}
+.meter{height:10px;background:var(--line);border-radius:5px;overflow:hidden;margin:8px 0 6px}
+.meter b{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+.stats{font:.85rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin-top:6px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+.legend .m::before{border:2px solid var(--gold)}
+.legend .x::before{background:var(--bad)}
+.meter{position:relative;overflow:visible}
+.meter b{border-radius:5px}
+.meter .tick{position:absolute;top:-4px;bottom:-4px;left:25%;width:2px;background:var(--fg)}
+.meter .tick::after{content:"25%";position:absolute;top:-18px;left:-10px;font:600 .68rem var(--mono);color:var(--muted)}
+.sizes{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px}
+.sizes .lbl{font-weight:600;margin-right:4px}
+.sizes button{min-width:42px;padding:8px 0;font-family:var(--mono)}
+.done-banner{margin-top:10px;padding:10px 12px;border-radius:6px;background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok);font-weight:600}
+.who{display:flex;gap:10px;align-items:center;color:#d8d2c0;font-size:.95rem}
+.who strong{color:#fff}
+.who button{padding:4px 10px;font-size:.8rem;background:transparent;color:#d8d2c0;border-color:#4a4537}
+/* start + finish */
+.start{max-width:520px;margin:24px auto}
+.start label{display:block;font-weight:700;margin-bottom:6px}
+.start .row{display:flex;gap:10px;flex-wrap:wrap}
+.start input{flex:1 1 220px;min-width:0;font:600 1.1rem var(--body);padding:10px 12px;border:2px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.tile{min-width:0}
+.tile h3{margin:8px 0 0;font:600 .95rem var(--mono)}
+.tile .sub{font:.8rem var(--mono);color:var(--muted)}
+.finish{display:grid;gap:22px}
+.cert-wrap{display:grid;gap:12px}
+.cert-wrap canvas{width:100%;max-width:900px;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff}
+.note{font-size:.95rem;color:var(--muted);max-width:65ch;margin:0}
+@media (prefers-reduced-motion:reduce){.meter b{transition:none}}
+</style>
+</head>
+<body>
+
+<header><div class="in"><h1>Pixel Smiley Lab</h1><div class="who" id="who" hidden><span>Student: <strong id="whoName"></strong></span><button id="whoEdit">Change</button></div></div></header>
+<div class="wrap">
+  <section id="startView" class="card start" hidden>
+    <div class="eyebrow">Before you start</div>
+    <h2>Same 5 in square. More pixels per inch.</h2>
+    <p>You'll paint the same smiley at 5, 10, 20 and 25 ppi. Your name goes on the completion certificate you submit in Canvas.</p>
+    <label for="nameIn">Your first name</label>
+    <div class="row"><input id="nameIn" autocomplete="given-name" maxlength="40"><button class="primary" id="startBtn">Start</button></div>
+    <div class="msg bad" id="nameMsg" role="status"></div>
+  </section>
+
+  <nav class="steps" id="steps" aria-label="Levels" hidden></nav>
+  <section id="labView" class="lab" hidden>
+    <div class="board">
+      <div class="ruler" id="ruler" aria-hidden="true"></div>
+      <div class="frame" id="frame">
+        <canvas id="cv" aria-label="Pixel grid. Click and drag to paint pixels. Hold Alt or Option to erase."></canvas>
+        <div class="lock" id="lock">Solve the resolution equation to unlock this canvas.</div>
+      </div>
+      <div class="cap"><span>5 in × 5 in</span><span id="capPx"></span></div>
+    </div>
+    <div class="panel">
+      <div class="card">
+        <div class="eyebrow" id="lvlLabel">Level 1</div>
+        <h2>Do the math first</h2>
+        <p id="eqPrompt"></p>
+        <div class="eq" id="eq"></div>
+        <div class="msg" id="eqMsg" role="status"></div>
+      </div>
+      <div class="card">
+        <h2>Paint the smiley</h2>
+        <p><strong>Click and drag</strong> to paint. Hold <strong>Alt</strong> (<strong>Option</strong> on Mac) while dragging to erase stray pixels.</p>
+        <div class="tools">
+          <button id="tPencil" aria-pressed="true">Pencil <kbd>B</kbd></button>
+          <button id="tEraser" aria-pressed="false">Eraser <kbd>E</kbd></button>
+          <button id="tGuide" aria-pressed="true">Guide <kbd>G</kbd></button>
+          <button id="tUndo">Undo <kbd>Ctrl Z</kbd></button>
+          <button id="tClear">Clear</button>
+        </div>
+        <div class="sizes" id="sizes" role="group" aria-label="Brush size"></div>
+      </div>
+      <div class="card">
+        <h2>Your progress</h2>
+        <p id="progHelp">Paint at least 25% of the smiley's pixels yourself. Then you can fill in the rest.</p>
+        <div class="meter" aria-hidden="true"><b id="bar"></b><span class="tick"></span></div>
+        <div class="stats" id="score"></div>
+        <div class="tools" style="margin-top:12px"><button id="tShow" aria-pressed="false">Show misses</button><button class="primary" id="tFill" disabled>Fill in the answer</button></div>
+        <div class="legend"><span class="m">Missed pixel</span><span class="x">Extra pixel</span></div>
+        <div class="done-banner" id="doneBanner" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="finView" class="finish" hidden>
+    <div>
+      <div class="eyebrow">All four levels</div>
+      <h2 style="margin:0;font:800 1.5rem var(--display)">Same size. More pixels.</h2>
+      <p class="note">Every square below is exactly 5 inches wide. The only thing that changed is how many pixels fit in each inch.</p>
+    </div>
+    <div class="gallery" id="gallery"></div>
+    <div class="cert-wrap">
+      <div class="eyebrow">Your certificate</div>
+      <canvas id="cert" width="1600" height="920" aria-label="Completion certificate"></canvas>
+      <div class="tools"><button class="primary" id="saveCert">Save certificate (PNG)</button></div>
+      <div class="msg" id="saveMsg" role="status"></div>
+      <p class="note" id="submitNote"><strong>To submit:</strong> save your certificate and upload it to the Canvas assignment.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const IN=5;
+const LEVELS=[
+  {n:25,ppi:5,ask:"px"},{n:50,ppi:10,ask:"px"},{n:100,ppi:20,ask:"ppi"},{n:125,ppi:25,ask:"ppi"}
+];
+const MIN=0.25;
+function ink(x,y){
+  const d=Math.hypot(x-2.5,y-2.5); if(d<=2.3&&d>=1.95) return 1;
+  if(Math.hypot(x-1.75,y-1.85)<=0.32||Math.hypot(x-3.25,y-1.85)<=0.32) return 1;
+  const sd=Math.hypot(x-2.5,y-2.55), a=Math.atan2(y-2.55,x-2.5)*180/Math.PI;
+  return (sd>=0.975&&sd<=1.325&&a>=25&&a<=155)?1:0;
+}
+const targets={};
+function target(n){
+  if(targets[n]) return targets[n];
+  const c=IN/n,s=n<=50?8:4,t=new Uint8Array(n*n);
+  for(let j=0;j<n;j++)for(let i=0;i<n;i++){let h=0;
+    for(let a=0;a<s;a++)for(let b=0;b<s;b++)h+=ink(i*c+(a+.5)*c/s,j*c+(b+.5)*c/s);
+    t[j*n+i]=h/(s*s)>=0.25?1:0;}
+  return targets[n]=t;
+}
+function count(t){let c=0;for(const v of t)c+=v;return c;}
+// state
+const KEY="pxsmiley3";
+function fresh(){return {name:"",completedAt:0,lv:LEVELS.map(()=>({solved:false,cells:"",done:false,hit:0,extra:0}))};}
+let S=fresh();
+try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);if(p&&p.lv&&p.lv.length===4)S=p;}}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let cur=0, tool="pencil", size=1, guide=true, showMiss=false, cells=null, undo=[];
+const $=id=>document.getElementById(id);
+const cv=$("cv"), ctx=cv.getContext("2d");
+function unlocked(i){return i===0||S.lv[i-1].done}
+function allDone(){return S.lv.every(l=>l.done)}
+function sizesFor(n){return n>=100?[1,2,3,4,5]:[1,2,3];}
+
+// name
+function showStart(){
+  ["labView","finView","steps","who"].forEach(id=>$(id).hidden=true);
+  $("startView").hidden=false;$("nameIn").value=S.name||"";$("nameIn").focus();
+}
+function startLab(){
+  const v=$("nameIn").value.trim().replace(/\s+/g," ");
+  if(!v){$("nameMsg").textContent="Type your first name to start.";return;}
+  S.name=v;save();$("nameMsg").textContent="";
+  $("startView").hidden=true;$("steps").hidden=false;$("who").hidden=false;$("whoName").textContent=S.name;
+  let s=0;while(s<4&&S.lv[s].done)s++;go(s);
+}
+$("startBtn").onclick=startLab;$("nameIn").onkeydown=e=>{if(e.key==="Enter")startLab()};
+$("whoEdit").onclick=()=>{persist();showStart();};
+
+function renderSteps(){
+  const el=$("steps");el.innerHTML="";
+  LEVELS.forEach((L,i)=>{const b=document.createElement("button");b.className="step"+(S.lv[i].done?" done":"");
+    b.innerHTML=`<span class="dot"></span>${L.ppi} ppi`;b.disabled=!unlocked(i);b.setAttribute("aria-current",cur===i);
+    b.onclick=()=>go(i);el.appendChild(b);});
+  const b=document.createElement("button");b.className="step"+(allDone()?" done":"");b.disabled=!allDone();
+  b.innerHTML=`<span class="dot"></span>Compare + certificate`;b.setAttribute("aria-current",cur===4);b.onclick=()=>go(4);el.appendChild(b);
+}
+function go(i){
+  if(cur<4) persist();
+  cur=i;showMiss=false;undo=[];hover=null;
+  $("labView").hidden=i===4;$("finView").hidden=i!==4;
+  renderSteps();
+  if(i===4){renderFinish();return;}
+  const L=LEVELS[i],st=S.lv[i];
+  cells=new Uint8Array(L.n*L.n);
+  if(st.done) cells.set(target(L.n));
+  else if(st.cells.length===L.n*L.n) for(let k=0;k<cells.length;k++) cells[k]=st.cells[k]==="1"?1:0;
+  $("lvlLabel").textContent=`Level ${i+1} of 4`;
+  $("capPx").textContent=st.solved?`${L.ppi} px per inch · ${L.n} × ${L.n} px`:"? × ? px";
+  buildEq();buildRuler();size=L.n>=100?3:1;buildSizes();
+  $("tShow").setAttribute("aria-pressed","false");
+  sizeCanvas();
+}
+function buildEq(){
+  const L=LEVELS[cur],st=S.lv[cur],eq=$("eq");
+  const field=`<input id="ans" inputmode="numeric" aria-label="Your answer" autocomplete="off">`;
+  if(L.ask==="px"){
+    $("eqPrompt").textContent=`This canvas is 5 inches wide at ${L.ppi} ppi. How many pixels wide is it?`;
+    eq.innerHTML=`<span>5 in × ${L.ppi} ppi =</span>${field}<span>px</span><button id="go">Check</button>`;
+  }else{
+    $("eqPrompt").textContent=`This canvas is ${L.n} pixels wide and prints at 5 inches. What is its resolution?`;
+    eq.innerHTML=`<span>${L.n} px ÷ 5 in =</span>${field}<span>ppi</span><button id="go">Check</button>`;
+  }
+  const want=L.ask==="px"?L.n:L.ppi, inp=$("ans");
+  const ok=()=>{inp.value=want;inp.className="right";inp.disabled=true;$("go").disabled=true;
+    $("eqMsg").className="msg ok";$("eqMsg").textContent=`Right. ${L.n} × ${L.n} = ${(L.n*L.n).toLocaleString()} pixels on this canvas.`;
+    $("lock").hidden=true;$("capPx").textContent=`${L.ppi} px per inch · ${L.n} × ${L.n} px`;};
+  if(st.solved){ok();return;}
+  $("lock").hidden=false;$("eqMsg").textContent="";
+  const test=()=>{const v=parseFloat(inp.value);
+    if(v===want){st.solved=true;save();ok();draw();}
+    else{inp.className="wrong";$("eqMsg").className="msg bad";
+      $("eqMsg").textContent=L.ask==="px"?"Not quite. Pixels = inches × pixels per inch.":"Not quite. ppi = pixels ÷ inches.";}};
+  $("go").onclick=test;inp.onkeydown=e=>{if(e.key==="Enter")test()};
+}
+function buildRuler(){
+  const r=$("ruler"),n=LEVELS[cur].n;r.innerHTML="";
+  for(let k=0;k<=IN;k++){const s=document.createElement("span");s.style.left=(k/IN*100)+"%";s.textContent=k+(k===IN?" in":"");r.appendChild(s);
+    const t=document.createElement("i");t.className="big";t.style.left=(k/IN*100)+"%";r.appendChild(t);}
+  for(let k=1;k<n;k++){if(k%(n/IN)===0)continue;const t=document.createElement("i");t.style.left=(k/n*100)+"%";r.appendChild(t);}
+}
+function buildSizes(){
+  const el=$("sizes");el.innerHTML=`<span class="lbl">Brush size</span>`;
+  sizesFor(LEVELS[cur].n).forEach(v=>{const b=document.createElement("button");b.textContent=v+" px";b.setAttribute("aria-pressed",v===size);
+    b.onclick=()=>{size=v;buildSizes();req();};el.appendChild(b);});
+  const k=document.createElement("kbd");k.textContent="[ ]";el.appendChild(k);
+}
+// drawing
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function drawGuide(c,W,color){
+  c.save();c.scale(W/IN,W/IN);c.strokeStyle=color;c.fillStyle=color;
+  c.lineWidth=.35;c.beginPath();c.arc(2.5,2.5,2.125,0,Math.PI*2);c.stroke();
+  c.beginPath();c.arc(1.75,1.85,.32,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(3.25,1.85,.32,0,Math.PI*2);c.fill();
+  c.beginPath();c.arc(2.5,2.55,1.15,25*Math.PI/180,155*Math.PI/180);c.stroke();c.restore();
+}
+function paintCells(c,W,n,data,o={}){
+  const pal=o.pal||{surface:css("--surface"),ink:css("--ink"),minor:css("--minor"),major:css("--major"),guide:css("--guide"),gold:css("--gold"),bad:css("--bad")};
+  const cs=W/n;c.clearRect(0,0,W,W);c.fillStyle=pal.surface;c.fillRect(0,0,W,W);
+  if(o.g)drawGuide(c,W,pal.guide);
+  c.fillStyle=pal.ink;
+  for(let j=0;j<n;j++)for(let i=0;i<n;i++)if(data[j*n+i])c.fillRect(Math.floor(i*cs),Math.floor(j*cs),Math.ceil(cs),Math.ceil(cs));
+  const ppi=n/IN,D=o.D||window.devicePixelRatio||1;
+  if(o.grid){
+    c.strokeStyle=pal.minor;c.lineWidth=Math.max(1,D*.75);c.beginPath();
+    for(let k=1;k<n;k++){if(k%ppi===0)continue;const p=Math.round(k*cs)+.5;c.moveTo(p,0);c.lineTo(p,W);c.moveTo(0,p);c.lineTo(W,p);}c.stroke();
+  }
+  if(o.grid||o.inches){
+    c.strokeStyle=pal.major;c.lineWidth=(o.grid?2.5:1.5)*D;c.beginPath();
+    for(let k=0;k<=IN;k++){const p=Math.min(W-c.lineWidth/2,Math.max(c.lineWidth/2,k*ppi*cs));c.moveTo(p,0);c.lineTo(p,W);c.moveTo(0,p);c.lineTo(W,p);}c.stroke();}
+  if(o.miss){const t=target(n);c.lineWidth=Math.max(1.5,cs*.12);c.strokeStyle=pal.gold;c.fillStyle=pal.bad;
+    for(let k=0;k<n*n;k++){const i=k%n,j=(k/n)|0;
+      if(t[k]&&!data[k]){const p=c.lineWidth/2;c.strokeRect(i*cs+p,j*cs+p,cs-2*p,cs-2*p);}
+      else if(!t[k]&&data[k]){c.fillRect(i*cs+cs*.2,j*cs+cs*.2,cs*.6,cs*.6);}}}
+}
+function sizeCanvas(){
+  const r=$("frame").getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+  cv.width=Math.max(1,Math.round(r.width*dpr));cv.height=cv.width;draw();
+}
+function stats(){const t=target(LEVELS[cur].n);let hit=0,extra=0,total=0;
+  for(let k=0;k<t.length;k++){if(t[k]){total++;if(cells[k])hit++;}else if(cells[k])extra++;}
+  return {hit,extra,total,cov:hit/total};}
+function canPaint(){return S.lv[cur].solved&&!S.lv[cur].done}
+function draw(){
+  if(cur>3||!cells)return;const W=cv.width,n=LEVELS[cur].n,st=S.lv[cur];
+  paintCells(ctx,W,n,cells,{grid:true,g:guide&&!st.done,miss:showMiss&&!st.done});
+  if(hover&&canPaint()){const cs=W/n,o=Math.floor((size-1)/2),D=window.devicePixelRatio||1;
+    ctx.strokeStyle=css(curV()?"--major":"--bad");ctx.lineWidth=2*D;
+    ctx.strokeRect((hover[0]-o)*cs+D,(hover[1]-o)*cs+D,size*cs-2*D,size*cs-2*D);}
+  updProgress();
+}
+function updProgress(){
+  const st=S.lv[cur],s=stats();
+  $("doneBanner").hidden=!st.done;
+  if(st.done){
+    $("bar").style.width="100%";
+    $("score").textContent=`You painted ${st.hit} of ${s.total} smiley pixels yourself (${Math.round(st.hit/s.total*100)}%).`;
+    $("doneBanner").textContent=cur<3?"Level complete. The next resolution is unlocked.":"All four levels complete. Open Compare + certificate.";
+    $("tFill").disabled=true;$("tShow").disabled=true;$("progHelp").hidden=true;return;
+  }
+  $("progHelp").hidden=false;$("tShow").disabled=!st.solved;
+  $("bar").style.width=Math.min(100,s.cov*100)+"%";
+  const need=Math.ceil(s.total*MIN);
+  let line=`${s.hit} of ${s.total} smiley pixels painted (${Math.round(s.cov*100)}%) · ${s.extra} extra`;
+  let ready=s.hit>=need, tooMessy=s.extra>s.hit;
+  if(!ready) line+=` · ${need-s.hit} more to unlock Fill in the answer`;
+  else if(tooMessy) line+=` · too many extra pixels. Alt-drag to erase some.`;
+  $("score").textContent=line;
+  $("tFill").disabled=!(st.solved&&ready&&!tooMessy);
+}
+let raf=0;function req(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;draw();});}
+let down=false,last=null,hover=null,altHeld=false,rightBtn=false;
+function curV(e){if(rightBtn||altHeld||(e&&e.altKey))return 0;return tool==="pencil"?1:0;}
+function cellAt(e){const r=cv.getBoundingClientRect(),n=LEVELS[cur].n;
+  return [Math.min(n-1,Math.max(0,Math.floor((e.clientX-r.left)/r.width*n))),Math.min(n-1,Math.max(0,Math.floor((e.clientY-r.top)/r.height*n)))]}
+function stamp(i,j,v){const n=LEVELS[cur].n,o=Math.floor((size-1)/2);
+  for(let y=j-o;y<j-o+size;y++)for(let x=i-o;x<i-o+size;x++)if(x>=0&&y>=0&&x<n&&y<n)cells[y*n+x]=v;}
+function line(a,b,v){let [x0,y0]=a;const [x1,y1]=b,dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let er=dx+dy;
+  for(;;){stamp(x0,y0,v);if(x0===x1&&y0===y1)break;const e2=2*er;if(e2>=dy){er+=dy;x0+=sx}if(e2<=dx){er+=dx;y0+=sy}}}
+cv.addEventListener("pointerdown",e=>{if(!canPaint())return;e.preventDefault();
+  try{cv.setPointerCapture(e.pointerId)}catch(_){}
+  down=true;rightBtn=e.button===2;altHeld=e.altKey;
+  undo.push(cells.slice());if(undo.length>40)undo.shift();last=hover=cellAt(e);stamp(...last,curV(e));req();});
+cv.addEventListener("pointermove",e=>{if(cur>3)return;altHeld=e.altKey;const c=cellAt(e);hover=c;
+  if(down&&(c[0]!==last[0]||c[1]!==last[1])){line(last,c,curV(e));last=c;}req();});
+cv.addEventListener("pointerleave",()=>{if(!down){hover=null;req();}});
+cv.addEventListener("contextmenu",e=>e.preventDefault());
+cv.addEventListener("dragstart",e=>e.preventDefault());
+const end=()=>{if(down){down=false;rightBtn=false;persist();req();}};
+cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end);window.addEventListener("pointerup",end);
+window.addEventListener("blur",()=>{altHeld=false;end();req();});
+function persist(){if(!cells||cur>3||S.lv[cur].done)return;S.lv[cur].cells=Array.from(cells).join("");save();}
+function setTool(t){tool=t;$("tPencil").setAttribute("aria-pressed",t==="pencil");$("tEraser").setAttribute("aria-pressed",t==="eraser");req();}
+function changeSize(d){const a=sizesFor(LEVELS[cur].n);size=Math.min(a[a.length-1],Math.max(1,size+d));buildSizes();req();}
+$("tPencil").onclick=()=>setTool("pencil");$("tEraser").onclick=()=>setTool("eraser");
+$("tGuide").onclick=()=>{guide=!guide;$("tGuide").setAttribute("aria-pressed",guide);draw();};
+$("tUndo").onclick=()=>{if(canPaint()&&undo.length){cells=undo.pop();persist();draw();}};
+$("tClear").onclick=()=>{if(!canPaint())return;undo.push(cells.slice());cells.fill(0);persist();draw();};
+$("tShow").onclick=()=>{showMiss=!showMiss;$("tShow").setAttribute("aria-pressed",showMiss);draw();};
+$("tFill").onclick=()=>{const st=S.lv[cur],s=stats();if($("tFill").disabled)return;
+  st.hit=s.hit;st.extra=s.extra;st.done=true;st.cells="";cells.set(target(LEVELS[cur].n));showMiss=false;
+  $("tShow").setAttribute("aria-pressed","false");
+  if(allDone()&&!S.completedAt)S.completedAt=Date.now();
+  save();renderSteps();draw();};
+document.addEventListener("keyup",e=>{if(e.key==="Alt"){altHeld=false;e.preventDefault();req();}});
+document.addEventListener("keydown",e=>{if(cur>3||$("labView").hidden||e.target.tagName==="INPUT")return;
+  if(e.key==="Alt"){altHeld=true;e.preventDefault();req();return;}
+  const k=e.key.toLowerCase(),code=e.code;
+  if((e.ctrlKey||e.metaKey)&&k==="z"){e.preventDefault();$("tUndo").click();return;}
+  if(e.ctrlKey||e.metaKey)return;
+  if(code==="KeyB")setTool("pencil");else if(code==="KeyE")setTool("eraser");else if(code==="KeyG")$("tGuide").click();
+  else if(code==="BracketLeft")changeSize(-1);else if(code==="BracketRight")changeSize(1);});
+
+// finish
+const LIGHT={surface:"#ffffff",ink:"#17150f",minor:"rgba(90,80,60,.28)",major:"#8a6400",guide:"rgba(23,21,15,.16)",gold:"#f0b82d",bad:"#c2412d"};
+function code(){const str=[S.name,S.completedAt,...S.lv.map(l=>l.hit+"."+l.extra)].join("|");
+  let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+  const a=h.toString(36).toUpperCase().padStart(7,"0"),b=(S.completedAt%46656).toString(36).toUpperCase().padStart(3,"0");
+  return `PX-${a.slice(0,4)}-${a.slice(4,7)}${b}`;}
+function renderFinish(){
+  const g=$("gallery");g.innerHTML="";
+  LEVELS.forEach((L,i)=>{const st=S.lv[i],tot=count(target(L.n));
+    const d=document.createElement("div");d.className="tile";
+    d.innerHTML=`<div class="frame"><canvas></canvas></div><h3>5 in × ${L.ppi} ppi = ${L.n} px</h3><div class="sub">${(L.n*L.n).toLocaleString()} pixels · you painted ${st.hit} of ${tot}</div>`;
+    g.appendChild(d);
+    requestAnimationFrame(()=>{const c=d.querySelector("canvas"),W=Math.max(1,Math.round(d.querySelector(".frame").getBoundingClientRect().width*(window.devicePixelRatio||1)));
+      c.width=c.height=W;paintCells(c.getContext("2d"),W,L.n,target(L.n),{inches:true});});
+  });
+  drawCert();
+}
+async function drawCert(){
+  try{await document.fonts.ready;}catch(e){}
+  const c=$("cert"),x=c.getContext("2d"),W=1600,H=920,F="'Bricolage Grotesque',system-ui,sans-serif",M="'IBM Plex Mono',ui-monospace,monospace";
+  x.fillStyle="#ffffff";x.fillRect(0,0,W,H);
+  x.fillStyle="#000";x.fillRect(0,0,W,130);x.fillStyle="#f0b82d";x.fillRect(0,130,W,10);
+  x.fillStyle="#fff";x.font=`800 54px ${F}`;x.textBaseline="middle";x.fillText("Pixel Smiley Lab",60,66);
+  x.textAlign="right";x.font=`600 26px ${M}`;x.fillStyle="#d8d2c0";x.fillText("Certificate of completion",W-60,66);x.textAlign="left";
+  x.textBaseline="alphabetic";x.fillStyle="#6b6553";x.font=`600 24px ${M}`;x.fillText("COMPLETED BY",60,210);
+  x.fillStyle="#17150f";x.font=`800 84px ${F}`;x.fillText(S.name||"",60,295);
+  const dt=new Date(S.completedAt||Date.now());
+  x.fillStyle="#6b6553";x.font=`400 26px ${M}`;
+  x.fillText(dt.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"})+" · "+dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}),60,345);
+  x.textAlign="right";x.fillStyle="#17150f";x.font=`600 30px ${M}`;x.fillText(code(),W-60,295);
+  x.fillStyle="#6b6553";x.font=`400 20px ${M}`;x.fillText("completion code",W-60,345);x.textAlign="left";
+  const S0=330,gap=(W-120-S0*4)/3;
+  LEVELS.forEach((L,i)=>{const px=60+i*(S0+gap),py=400,tot=count(target(L.n)),st=S.lv[i];
+    const off=document.createElement("canvas");off.width=off.height=S0;
+    paintCells(off.getContext("2d"),S0,L.n,target(L.n),{inches:true,pal:LIGHT,D:1});
+    x.drawImage(off,px,py);x.strokeStyle="#ddd6c3";x.lineWidth=2;x.strokeRect(px-1,py-1,S0+2,S0+2);
+    x.fillStyle="#17150f";x.font=`600 24px ${M}`;x.fillText(`5 in × ${L.ppi} ppi = ${L.n} px`,px,py+S0+42);
+    x.fillStyle="#6b6553";x.font=`400 20px ${M}`;x.fillText(`Painted ${st.hit} of ${tot} (${Math.round(st.hit/tot*100)}%)`,px,py+S0+74);
+  });
+  x.fillStyle="#17150f";x.font=`600 26px ${F}`;
+  x.fillText("Same 5 in × 5 in every time. More pixels per inch, smoother edges.",60,H-50);
+}
+let DL=null;
+(async()=>{try{DL=window.claude&&await window.claude.use("downloads");}catch(e){DL=null}
+})();
+$("saveCert").onclick=()=>{const m=$("saveMsg");m.className="msg";m.textContent="";
+  $("cert").toBlob(async blob=>{
+    const fn=`PixelSmiley_${(S.name||"student").replace(/[^A-Za-z0-9-]+/g,"_")}.png`;
+    if(!DL){try{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
+        m.className="msg ok";m.textContent=`Downloaded ${fn}. Upload it to Canvas.`;}catch(e){m.className="msg bad";m.textContent="Download didn't work here. Take a screenshot of the certificate instead.";}return;}
+    try{await DL.save({filename:fn,data:blob});m.className="msg ok";m.textContent=`Saved ${fn}. Upload it to Canvas.`;}
+    catch(e){m.className="msg bad";m.textContent=e&&e.code==="declined"?"Save canceled.":"Saving isn't available here. Take a screenshot of the certificate instead.";}
+  },"image/png");};
+
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{if(cur===4&&!$("finView").hidden)renderFinish();else if(!$("labView").hidden)sizeCanvas();},120)});
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{if(cur===4)renderFinish();else draw();});
+if(S.name)startLab0();else showStart();
+function startLab0(){$("nameIn").value=S.name;startLab();}
+</script>
+
+</body>
+</html>
