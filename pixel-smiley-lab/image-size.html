@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Image Size Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+html,body{margin:0}
+/* Layout: black course header, scenario stepper, Photoshop-style Image Size dialog beside a physical-scale stage */
+:root{
+  --bg:#f6f4ee; --surface:#ffffff; --fg:#17150f; --muted:#6b6553; --line:#ddd6c3;
+  --gold:#f0b82d; --gold-ink:#8a6400; --ink:#17150f;
+  --ok:#2f7d4a; --bad:#c2412d; --minor:rgba(90,80,60,.28); --major:#8a6400;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12110d; --surface:#1c1a15; --fg:#f2eee2; --muted:#a59d87; --line:#34302a;
+  --gold:#f0b82d; --gold-ink:#f0b82d; --ink:#f2eee2;
+  --ok:#5fbf7f; --bad:#ef7462; --minor:rgba(242,238,226,.22); --major:#f0b82d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12110d; --surface:#1c1a15; --fg:#f2eee2; --muted:#a59d87; --line:#34302a;
+  --gold:#f0b82d; --gold-ink:#f0b82d; --ink:#f2eee2;
+  --ok:#5fbf7f; --bad:#ef7462; --minor:rgba(242,238,226,.22); --major:#f0b82d; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+header{background:#000;color:#fff;border-bottom:6px solid var(--gold);padding:18px 16px}
+header .in{max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;gap:6px 20px;align-items:baseline;justify-content:space-between}
+header h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(1.5rem,4vw,2.1rem);letter-spacing:-.01em}
+header .who{color:#d8d2c0;font-size:.95rem}
+header .who strong{color:#fff}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+.intro{max-width:72ch;margin:0 0 18px}
+.intro p{margin:0 0 8px}
+.rules{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 20px}
+.rule{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:.92rem;min-width:0;flex:1 1 260px}
+.rule b{display:block;font:600 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:2px}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.step{font:600 .85rem var(--mono);padding:8px 12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.step[aria-current="true"]{border-color:var(--gold);box-shadow:inset 0 -3px 0 var(--gold)}
+.step .dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.step.done .dot{background:var(--ok)}
+button:focus-visible,input:focus-visible,select:focus-visible,.step:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.lab{display:grid;grid-template-columns:360px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:900px){.lab{grid-template-columns:minmax(0,1fr)}}
+.side{display:grid;gap:16px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px}
+.card h2{margin:0 0 6px;font-family:var(--display);font-size:1.2rem;font-weight:800;text-wrap:balance}
+.card p{margin:0 0 8px}
+.eyebrow{font:600 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--gold-ink);margin-bottom:4px}
+.goal{border-left:4px solid var(--gold);padding:6px 0 6px 12px;margin:10px 0 0;font-weight:600}
+.fb{margin-top:12px;padding:10px 12px;border-radius:6px;font-size:.95rem}
+.fb.hint{background:color-mix(in srgb,var(--bad) 10%,transparent);color:var(--fg);border:1px solid color-mix(in srgb,var(--bad) 40%,transparent)}
+.fb.win{background:color-mix(in srgb,var(--ok) 12%,transparent);border:1px solid color-mix(in srgb,var(--ok) 45%,transparent)}
+.fb.win b{color:var(--ok)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{font:600 .92rem var(--body);padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
+button.primary{background:var(--gold);color:#000;border-color:var(--gold)}
+/* Photoshop-style dialog: deliberately fixed dark UI so it reads like the real dialog in both themes */
+.ps{background:#323232;color:#e6e6e6;border-radius:6px;padding:14px 16px;font:13px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);border:1px solid #1e1e1e}
+.ps .ttl{font-weight:600;margin-bottom:10px;color:#fff}
+.ps .meta{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;margin-bottom:12px}
+.ps .meta span:nth-child(odd){color:#a8a8a8}
+.ps .meta strong{font-variant-numeric:tabular-nums;color:#fff}
+.ps .grid{display:grid;grid-template-columns:78px 1fr 92px;gap:8px 8px;align-items:center;position:relative}
+.ps label{color:#cfcfcf;text-align:right}
+.ps input,.ps select{background:#262626;color:#fff;border:1px solid #555;border-radius:3px;padding:5px 7px;font:13px system-ui,sans-serif;width:100%;min-width:0;font-variant-numeric:tabular-nums}
+.ps input:disabled{color:#8a8a8a;background:#2c2c2c}
+.ps .unit{color:#cfcfcf}
+.ps .chain{position:absolute;left:4px;top:4px;height:62px;width:16px;display:flex;align-items:center;justify-content:center}
+.ps .chain::before{content:"";position:absolute;left:10px;top:12px;bottom:12px;width:7px;border:1.5px solid #8a8a8a;border-right:0;border-radius:3px 0 0 3px}
+.ps .chain svg{position:relative;background:#323232}
+.ps .rs{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid #444}
+.ps .rs input{width:16px;height:16px;accent-color:#2d8ceb}
+.ps .rs select{width:auto;margin-left:auto;color:#8a8a8a}
+.ps .rs label{color:#fff;text-align:left;font-weight:600}
+.eq{font:600 .9rem var(--mono);display:grid;gap:4px;font-variant-numeric:tabular-nums}
+.eq small{font:400 .75rem var(--mono);color:var(--muted)}
+.stage-card{padding:12px}
+.stage-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font:.8rem var(--mono);color:var(--muted);margin:0 4px 6px}
+#stage{display:block;width:100%;height:auto}
+.legend{font-size:.85rem;color:var(--muted);margin:6px 4px 0}
+.alldone{margin-top:18px}
+.navbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:24px}
+.navbar a{color:var(--gold-ink);font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header><div class="in"><h1>Image Size Explorer</h1><div class="who" id="who" hidden>Student: <strong id="whoName"></strong></div></div></header>
+<div class="wrap">
+  <div class="intro">
+    <p>In the Pixel Smiley Lab, the canvas never changed size. Real images do. Here you'll use a working copy of Photoshop's <strong>Image &gt; Image Size</strong> dialog and watch what happens to the pixels and the physical size when <strong>Resample</strong> is on or off.</p>
+  </div>
+  <div class="rules">
+    <div class="rule"><b>Resample unchecked</b>Rearranges the pixels you have. The size in inches changes; the pixel count stays the same.</div>
+    <div class="rule"><b>Resample checked</b>Adds or removes pixels. Use it to enlarge or reduce. Adding pixels never adds detail.</div>
+    <div class="rule"><b>The equations</b>Number of Pixels ÷ Resolution = Inches<br>Inches × Resolution = Number of Pixels</div>
+  </div>
+
+  <nav class="steps" id="steps" aria-label="Scenarios"></nav>
+
+  <section class="lab">
+    <div class="side">
+      <div class="card" id="scn">
+        <div class="eyebrow" id="scnNum"></div>
+        <h2 id="scnTitle"></h2>
+        <p id="scnText"></p>
+        <div class="goal" id="scnGoal"></div>
+        <div class="fb" id="fb" role="status" hidden></div>
+        <div class="row"><button id="reset">Reset this image</button><button class="primary" id="next" hidden>Next scenario</button></div>
+      </div>
+
+      <div class="ps" role="group" aria-label="Image Size dialog">
+        <div class="ttl">Image Size</div>
+        <div class="meta">
+          <span>Image Size:</span><strong id="mSize"></strong>
+          <span>Dimensions:</span><strong id="mDims"></strong>
+        </div>
+        <div class="grid">
+          <div class="chain" aria-hidden="true" title="Constrain aspect ratio"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M5.5 8.5l3-3M6 3.5l1.2-1.2a2.3 2.3 0 013.3 3.3L9.3 6.8M7.9 10.5l-1.2 1.2a2.3 2.3 0 01-3.3-3.3l1.2-1.2" fill="none" stroke="#cfcfcf" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          <label for="fW">Width:</label><input id="fW" inputmode="decimal" autocomplete="off"><select id="fUnit" aria-label="Width and height units"><option value="in">Inches</option><option value="px">Pixels</option></select>
+          <label for="fH">Height:</label><input id="fH" inputmode="decimal" autocomplete="off"><span class="unit" id="hUnit">Inches</span>
+          <label for="fR">Resolution:</label><input id="fR" inputmode="decimal" autocomplete="off"><span class="unit">Pixels/Inch</span>
+        </div>
+        <div class="rs"><input type="checkbox" id="fRs"><label for="fRs">Resample:</label><select disabled aria-label="Resample method"><option>Automatic</option></select></div>
+      </div>
+
+      <div class="card">
+        <div class="eyebrow">The math right now</div>
+        <div class="eq" id="eq"></div>
+      </div>
+    </div>
+
+    <div class="card stage-card">
+      <div class="stage-top"><span>Shown at true relative size. Every image here uses the same inch scale.</span><span id="scaleNote"></span></div>
+      <canvas id="stage" aria-label="Before and after images drawn at the same physical scale"></canvas>
+      <p class="legend">Gold lines mark inches. Thin lines mark pixels when they're big enough to see.</p>
+    </div>
+  </section>
+
+  <div class="card alldone" id="allDone" hidden>
+    <div class="eyebrow">All scenarios complete</div>
+    <h2>You can read the Image Size dialog</h2>
+    <p>Before you resize anything, ask what you need to keep. Keep the pixels and Resample stays off. Need more or fewer pixels and Resample goes on. More pixels from resampling up never bring back detail that wasn't captured.</p>
+  </div>
+
+  <div class="navbar"><a href="index.html">← Back to Pixel Smiley Lab</a></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+// ---------- image sources ----------
+function inkSmiley(x,y){ // x,y in inches on 5 in square
+  const d=Math.hypot(x-2.5,y-2.5); if(d<=2.3&&d>=1.95) return 1;
+  if(Math.hypot(x-1.75,y-1.85)<=0.32||Math.hypot(x-3.25,y-1.85)<=0.32) return 1;
+  const sd=Math.hypot(x-2.5,y-2.55), a=Math.atan2(y-2.55,x-2.5)*180/Math.PI;
+  return (sd>=0.975&&sd<=1.325&&a>=25&&a<=155)?1:0;
+}
+function sceneRGB(u,v){ // u,v 0..1 ; a simple "stock photo" landscape
+  const sunD=Math.hypot((u-.74)*2,(v-.24));
+  if(sunD<.075) return [255,214,102];
+  const ridge1=.50+.07*Math.sin(u*9.3)+.04*Math.sin(u*23+1);
+  const ridge2=.60+.05*Math.sin(u*6.1+2)+.03*Math.sin(u*31);
+  if(v>.80) {const s=.82+.18*((Math.sin(u*80)+Math.sin(v*120))>.9?1:0);return [Math.round(78*s),Math.round(128*s),Math.round(70*s)];}
+  if(v>ridge2) return [70,98,84];
+  if(v>ridge1) {const snow=v<ridge1+.025;return snow?[236,240,244]:[104,120,142];}
+  const t=Math.min(1,v/.6);return [Math.round(66+(196-66)*t),Math.round(128+(224-128)*t),Math.round(204+(240-204)*t)];
+}
+const SRC={
+  smiley5:{label:"Your 5 ppi smiley",pxW:25,pxH:25,ppi:5,kind:"smiley"},
+  smiley25:{label:"Your 25 ppi smiley",pxW:125,pxH:125,ppi:25,kind:"smiley"},
+  photo:{label:"Stock photo",pxW:1200,pxH:800,ppi:72,kind:"scene"},
+  stock:{label:"Stock background",pxW:13824,pxH:6912,ppi:72,kind:"scene"},
+};
+const SMALL=700; // sources at or under this width keep their real pixels in memory
+const origCache={};
+function original(key){ // true pixel data of the source (gray 0..255 or rgb)
+  if(origCache[key]) return origCache[key];
+  const s=SRC[key]; if(s.pxW>SMALL) return null;
+  const n=s.pxW,m=s.pxH,buf=new Uint8ClampedArray(n*m*4);
+  if(s.kind==="smiley"){const c=5/n,ss=4;
+    for(let j=0;j<m;j++)for(let i=0;i<n;i++){let h=0;
+      for(let a=0;a<ss;a++)for(let b=0;b<ss;b++)h+=inkSmiley(i*c+(a+.5)*c/ss,j*c+(b+.5)*c/ss);
+      const v=h/(ss*ss)>=.25?23:255,k=(j*n+i)*4;buf[k]=v;buf[k+1]=v-2;buf[k+2]=v-8;buf[k+3]=255;}
+  }else{for(let j=0;j<m;j++)for(let i=0;i<n;i++){const [r,g,b]=sceneRGB((i+.5)/n,(j+.5)/m),k=(j*n+i)*4;buf[k]=r;buf[k+1]=g;buf[k+2]=b;buf[k+3]=255;}}
+  return origCache[key]={w:n,h:m,buf};
+}
+// Build what an image with pxW x pxH pixels looks like, rendered into at most dw x dh display pixels.
+const viewCache=new Map();
+function view(key,pxW,pxH,dw,dh){
+  const exact=pxW<=dw; if(exact){dw=pxW;dh=pxH;}
+  const ck=[key,pxW,pxH,dw,dh].join("|"); if(viewCache.has(ck)) return viewCache.get(ck);
+  const s=SRC[key],o=original(key),out=new Uint8ClampedArray(dw*dh*4);
+  for(let j=0;j<dh;j++)for(let i=0;i<dw;i++){
+    // pixel of the resized image that covers this display pixel
+    const pi=Math.floor((i+.5)/dw*pxW), pj=Math.floor((j+.5)/dh*pxH), k=(j*dw+i)*4;
+    if(o&&pxW>=o.w){ // same or upsampled: nearest original pixel -> no new detail
+      const oi=Math.min(o.w-1,Math.floor((pi+.5)/pxW*o.w)),oj=Math.min(o.h-1,Math.floor((pj+.5)/pxH*o.h)),q=(oj*o.w+oi)*4;
+      out[k]=o.buf[q];out[k+1]=o.buf[q+1];out[k+2]=o.buf[q+2];out[k+3]=255;
+    }else if(o){ // downsampled: average the original pixels inside this new pixel
+      const x0=pi/pxW*o.w,x1=(pi+1)/pxW*o.w,y0=pj/pxH*o.h,y1=(pj+1)/pxH*o.h;let r=0,g=0,b=0,c=0;
+      for(let y=Math.floor(y0);y<Math.ceil(y1);y++)for(let x=Math.floor(x0);x<Math.ceil(x1);x++){const q=(Math.min(o.h-1,y)*o.w+Math.min(o.w-1,x))*4;r+=o.buf[q];g+=o.buf[q+1];b+=o.buf[q+2];c++;}
+      out[k]=r/c;out[k+1]=g/c;out[k+2]=b/c;out[k+3]=255;
+    }else{ // huge source: sample the scene at the resized pixel's center
+      const [r,g,b]=sceneRGB((pi+.5)/pxW,(pj+.5)/pxH);out[k]=r;out[k+1]=g;out[k+2]=b;out[k+3]=255;
+    }}
+  const c=document.createElement("canvas");c.width=dw;c.height=dh;c.getContext("2d").putImageData(new ImageData(out,dw,dh),0,0);
+  const res={canvas:c,exact};if(viewCache.size>40)viewCache.clear();viewCache.set(ck,res);return res;
+}
+
+// ---------- scenarios ----------
+const r2=v=>Math.round(v*100)/100;
+const SCN=[
+ {id:"rearrange",title:"Steal resolution from size",src:"smiley5",
+  text:"Here's your 5 in smiley at 5 ppi: 25 × 25 pixels. You want it at 25 ppi without inventing any pixels.",
+  goal:"Get to 25 ppi while keeping exactly 25 × 25 pixels.",
+  check(s){
+    if(s.ppi===25&&s.pxW===25) return {ok:true,msg:"<b>That's it.</b> The same 25 × 25 pixels, rearranged into 1 inch. 25 px ÷ 25 ppi = 1 in. Higher resolution came from a smaller size, not from new pixels."};
+    if(s.pxW===125&&s.resample) return {msg:"Your pixel dimensions jumped to 125 × 125. Resample is checked, so Photoshop added pixels. Uncheck Resample to rearrange the pixels you already have."};
+    if(s.pxW!==25) return {msg:"Your pixel count changed. Are you sure Resample is unchecked?"};
+    if(s.ppi!==25&&s.ppi!==5) return {msg:`Still 25 × 25 pixels, good. That's ${s.ppi} ppi. Set Resolution to 25.`};
+    return null;}},
+ {id:"trap",title:"The enlarge trap",src:"smiley5",compare:"smiley25",
+  text:"Same 5 ppi smiley. This time keep it 5 inches wide and ask Photoshop for 25 ppi anyway.",
+  goal:"Keep 5 in wide and set the Resolution to 25 ppi.",
+  check(s){
+    if(s.ppi===25&&s.pxW===125) return {ok:true,msg:"<b>Look closely.</b> Photoshop now says 125 × 125 pixels, the same count as the 25 ppi smiley you painted. But every original pixel was just cut into 25 identical squares, so the curves are exactly as blocky as before. Resampling up adds pixels, not detail. (Photoshop blends the blocks, so a real photo turns blurry instead of blocky. It still can't invent detail.)"};
+    if(s.ppi===25&&s.pxW===25) return {msg:"That rearranged the pixels into 1 inch. For this one, keep the 5 inch width. Check Resample so Photoshop has to add pixels."};
+    if(s.pxW===25&&!s.resample) return {msg:"Resample is unchecked, so the size can't stay at 5 inches. Check Resample."};
+    if(r2(s.inW)!==5) return {msg:`The width is ${r2(s.inW)} in. Keep it at 5 in.`};
+    return null;}},
+ {id:"reduceRes",title:"Lower the resolution, keep the size",src:"smiley25",
+  text:"Now start from your 25 ppi smiley: 125 × 125 pixels at 5 in. A client only needs 10 ppi at the same 5 inches.",
+  goal:"Keep 5 in wide and drop to 10 ppi.",
+  check(s){
+    if(s.ppi===10&&s.pxW===50) return {ok:true,msg:"<b>Pixels removed.</b> 125 → 50 pixels across. Photoshop averaged neighboring pixels together, so the edges went soft and gray. That detail is gone; checking Resample again and going back up won't restore it."};
+    if(s.ppi===10&&!s.resample) return {msg:`Your image grew to ${r2(s.inW)} inches. The pixels were rearranged, not removed. Check Resample to keep the 5 inch size.`};
+    if(r2(s.inW)!==5) return {msg:`The width is ${r2(s.inW)} in. Keep it at 5 in.`};
+    return null;}},
+ {id:"reduceSize",title:"Keep the resolution, make it smaller",src:"smiley25",
+  text:"Same 25 ppi smiley. The layout only has room for a 2 inch graphic, and it still needs 25 ppi.",
+  goal:"Make it 2 in wide at 25 ppi.",
+  check(s){
+    if(r2(s.inW)===2&&s.ppi===25) return {ok:true,msg:`<b>Smaller size, fewer pixels, smaller file.</b> 2 in × 25 ppi = 50 pixels. The file dropped from ${fmtMB(125,125)} to ${fmtMB(s.pxW,s.pxH)}. Same idea as resizing a big stock photo down to fit your layout.`};
+    if(r2(s.inW)===2&&!s.resample) return {msg:`Resolution jumped to ${r2(s.ppi)} ppi. Resample was unchecked, so all 125 pixels got squeezed into 2 inches. Check Resample to keep 25 ppi.`};
+    if(s.ppi!==25) return {msg:`Resolution is ${r2(s.ppi)} ppi. It needs to stay 25.`};
+    return null;}},
+ {id:"useAt",title:"What size can I use it at?",src:"photo",
+  text:"A stock photo comes in at 1200 × 800 pixels and 72 ppi, so Photoshop says it's 16.67 in wide. You need to know how big it can print at 300 ppi without making up pixels.",
+  goal:"Find the print size at 300 ppi without changing the pixel count.",
+  check(s){
+    if(s.ppi===300&&s.pxW===1200) return {ok:true,msg:"<b>4 × 2.67 inches.</b> 1200 px ÷ 300 ppi = 4 in. That's the largest this photo can print at high quality. If your layout needs it bigger, you need a bigger image, not a bigger number."};
+    if(s.ppi===300&&s.resample) return {msg:`Photoshop added pixels: ${s.pxW.toLocaleString()} × ${s.pxH.toLocaleString()}. That keeps 16.67 in, but none of those new pixels hold real detail. Uncheck Resample to see the true print size.`};
+    if(s.pxW!==1200) return {msg:"The pixel count changed. Uncheck Resample so the 1200 × 800 pixels stay the same."};
+    return null;}},
+ {id:"background",title:"The 8-foot background",src:"stock",page:{w:11,h:8.5},
+  text:"You grabbed a free stock background for an 11 × 8.5 in flyer. Photoshop says it's 192 × 96 inches (16 × 8 feet) at 72 ppi. Built as-is, your flyer file starts at 273 MB and takes forever to upload to Canvas.",
+  goal:"Resize it to 8.5 in tall at 300 ppi.",
+  check(s){
+    const h=r2(s.inH);
+    if(h===8.5&&s.ppi===300&&s.resample) return {ok:true,msg:`<b>${s.pxW.toLocaleString()} × ${s.pxH.toLocaleString()} px, ${fmtMB(s.pxW,s.pxH)}.</b> Down from 273.4 MB, and still a full 300 ppi for print. It's 17 in wide now, so finish with the Crop tool or Canvas Size to trim it to 11 in.`};
+    if(s.ppi===300&&!s.resample) return {msg:`Still 13,824 × 6,912 pixels and ${fmtMB(s.pxW,s.pxH)}. It's now ${r2(s.inW)} × ${h} in, but the pixels were only rearranged. Check Resample so Photoshop can remove the extra pixels.`};
+    if(s.ppi===300&&h!==8.5) return {msg:`Resolution is right, but that's ${s.pxW.toLocaleString()} pixels wide and ${fmtMB(s.pxW,s.pxH)}. Resample kept the ${r2(s.inW)} in width and added pixels to fill it. Now set Height to 8.5 in.`};
+    if(h===8.5&&s.ppi!==300) return {msg:`8.5 in tall at ${r2(s.ppi)} ppi is only ${s.pxH.toLocaleString()} pixels tall. Print needs 300 ppi.`};
+    return null;}},
+];
+
+// ---------- state ----------
+const KEY="pxsize1";
+let P={done:{}};try{const r=localStorage.getItem(KEY);if(r){const p=JSON.parse(r);if(p&&p.done)P=p;}}catch(e){}
+function saveP(){try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}}
+try{const r=localStorage.getItem("pxsmiley3");if(r){const n=JSON.parse(r).name;if(n){$("whoName").textContent=n;$("who").hidden=false;}}}catch(e){}
+let cur=0,S=null,unit="in";
+function fresh(i){const src=SRC[SCN[i].src];return {src:SCN[i].src,inW:src.pxW/src.ppi,ppi:src.ppi,resample:true};}
+function derive(s){const src=SRC[s.src],asp=src.pxH/src.pxW;s.inH=s.inW*asp;
+  if(s.resample){s.pxW=Math.max(1,Math.round(s.inW*s.ppi));s.pxH=Math.max(1,Math.round(s.inH*s.ppi));}
+  else{s.pxW=src.pxW;s.pxH=src.pxH;s.inW=src.pxW/s.ppi;s.inH=src.pxH/s.ppi;}
+  s.ppi=Math.round(s.ppi*100)/100;return s;}
+function fmtMB(w,h){const b=w*h*3;if(b<1024*1024)return (b/1024).toFixed(1)+" KB";if(b<1024**3)return (b/1048576).toFixed(1)+" MB";return (b/1024**3).toFixed(2)+" GB";}
+const fmtIn=v=>String(r2(v));
+
+// ---------- dialog ----------
+function setField(id,val){const el=$(id);if(document.activeElement!==el)el.value=val;}
+function renderDialog(){
+  setField("fW",unit==="in"?fmtIn(S.inW):S.pxW);setField("fH",unit==="in"?fmtIn(S.inH):S.pxH);setField("fR",fmtIn(S.ppi));
+  $("fRs").checked=S.resample;$("hUnit").textContent=unit==="in"?"Inches":"Pixels";$("fUnit").value=unit;
+  const lock=unit==="px"&&!S.resample;$("fW").disabled=lock;$("fH").disabled=lock;
+  const src=SRC[S.src],orig=fmtMB(src.pxW,src.pxH),now=fmtMB(S.pxW,S.pxH);
+  $("mSize").textContent=now===orig?now:`${now} (was ${orig})`;
+  $("mDims").textContent=`${S.pxW.toLocaleString()} px × ${S.pxH.toLocaleString()} px`;
+  $("eq").innerHTML=`<small>Number of Pixels ÷ Resolution = Inches</small><span>${S.pxW.toLocaleString()} px ÷ ${fmtIn(S.ppi)} ppi = ${fmtIn(S.inW)} in</span>`+
+    `<small style="margin-top:6px">Inches × Resolution = Number of Pixels</small><span>${fmtIn(S.inW)} in × ${fmtIn(S.ppi)} ppi = ${S.pxW.toLocaleString()} px</span>`;
+}
+function num(v){const n=parseFloat(String(v).replace(/,/g,""));return isFinite(n)&&n>0?n:null;}
+function onEdit(field,raw){
+  const v=num(raw);if(v==null)return;const src=SRC[S.src],asp=src.pxH/src.pxW;
+  if(field==="R"){const ppi=Math.min(2400,Math.max(1,v));S.ppi=ppi;if(!S.resample)S.inW=src.pxW/ppi;}
+  else{
+    let inW;
+    if(unit==="in")inW=field==="W"?v:v/asp;
+    else{if(!S.resample)return;inW=(field==="W"?v:v/asp)/S.ppi;}
+    inW=Math.min(2000,Math.max(.01,inW));
+    if(S.resample)S.inW=inW;else{S.ppi=src.pxW/inW;S.inW=inW;}
+  }
+  update();
+}
+["W","H","R"].forEach(f=>{const el=$("f"+f);el.addEventListener("input",()=>onEdit(f,el.value));el.addEventListener("blur",renderDialog);
+  el.addEventListener("keydown",e=>{if(e.key==="Enter"){onEdit(f,el.value);el.blur();}});});
+$("fRs").addEventListener("change",e=>{S.resample=e.target.checked;if(!S.resample){const src=SRC[S.src];S.inW=src.pxW/S.ppi;}update();});
+$("fUnit").addEventListener("change",e=>{unit=e.target.value;renderDialog();});
+
+// ---------- stage ----------
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function drawStage(win){
+  const cv=$("stage"),dpr=window.devicePixelRatio||1,W=Math.max(300,cv.parentElement.clientWidth-24);
+  const src=SRC[S.src],sc=SCN[cur];
+  const items=[{label:"Before",sub:`${src.pxW.toLocaleString()} × ${src.pxH.toLocaleString()} px @ ${src.ppi} ppi`,key:S.src,pxW:src.pxW,pxH:src.pxH,inW:src.pxW/src.ppi,inH:src.pxH/src.ppi},
+    {label:"After",sub:`${S.pxW.toLocaleString()} × ${S.pxH.toLocaleString()} px @ ${fmtIn(S.ppi)} ppi`,key:S.src,pxW:S.pxW,pxH:S.pxH,inW:S.inW,inH:S.inH,hot:true}];
+  if(sc.compare&&win){const c=SRC[sc.compare];items.push({label:"Painted at 25 ppi",sub:"125 × 125 px, real detail",key:sc.compare,pxW:c.pxW,pxH:c.pxH,inW:c.pxW/c.ppi,inH:c.pxH/c.ppi});}
+  if(sc.page)items.push({label:"Your flyer",sub:`${sc.page.w} × ${sc.page.h} in page`,page:true,inW:sc.page.w,inH:sc.page.h});
+  const gap=36,top=46,bottom=16,maxH=Math.min(520,Math.max(300,window.innerHeight-260));
+  const maxIn=Math.max(...items.map(i=>i.inH));
+  const x=cv.getContext("2d");
+  x.font="600 13px 'IBM Plex Mono',ui-monospace,monospace";items.forEach(it=>it.lw=x.measureText(it.label).width);
+  x.font="400 11px 'IBM Plex Mono',ui-monospace,monospace";items.forEach(it=>it.lw=Math.max(it.lw,x.measureText(it.sub).width)+6);
+  // items too small to hold their label get a label-wide slot; the rest share the remaining width
+  const avail=W-gap*(items.length-1);let scale=avail/items.reduce((a,b)=>a+b.inW,0);
+  for(let pass=0;pass<3;pass++){const fixed=items.filter(i=>i.inW*scale<i.lw),free=items.filter(i=>i.inW*scale>=i.lw);
+    if(!free.length)break;scale=(avail-fixed.reduce((a,b)=>a+b.lw,0))/free.reduce((a,b)=>a+b.inW,0);}
+  scale=Math.min(scale,(maxH-top-bottom)/maxIn);
+  const H=Math.ceil(maxIn*scale+top+bottom);
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);cv.style.height=H+"px";
+  x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,H);
+  const fg=css("--fg"),muted=css("--muted"),major=css("--major"),minor=css("--minor"),line=css("--line"),gold=css("--gold");
+  // ruler step: smallest of these with >= 34px between labels
+  const steps=[1,2,5,12,24,48,96];const st=steps.find(s=>s*scale>=34)||96;
+  $("scaleNote").textContent=st>=12?`Ruler ticks every ${st/12} ft`:`Ruler ticks every ${st} in`;
+  let px=0;
+  items.forEach(it=>{
+    const w=it.inW*scale,h=it.inH*scale,y=top;
+    x.fillStyle=it.hot?fg:muted;x.font="600 13px 'IBM Plex Mono',ui-monospace,monospace";x.textBaseline="alphabetic";
+    x.fillText(it.label,px,14);x.font="400 11px 'IBM Plex Mono',ui-monospace,monospace";x.fillStyle=muted;
+    x.fillText(it.sub,px,28);
+    // ruler
+    x.strokeStyle=muted;x.lineWidth=1;x.beginPath();
+    for(let k=0;k<=it.inW+1e-6;k+=st){const tx=px+k*scale+.5;x.moveTo(tx,y-8);x.lineTo(tx,y-2);}
+    x.stroke();
+    if(it.page){x.setLineDash([6,4]);x.strokeStyle=fg;x.lineWidth=1.5;x.strokeRect(px+.75,y+.75,Math.max(2,w-1.5),Math.max(2,h-1.5));x.setLineDash([]);px+=Math.max(w,it.lw)+gap;return;}
+    const dw=Math.max(1,Math.round(w*dpr)),dh=Math.max(1,Math.round(h*dpr));
+    const v=view(it.key,it.pxW,it.pxH,dw,dh);
+    x.imageSmoothingEnabled=!v.exact;x.drawImage(v.canvas,px,y,w,h);
+    const cell=w/it.pxW;
+    if(cell>=4){x.strokeStyle=minor;x.lineWidth=1;x.beginPath();
+      for(let k=1;k<it.pxW;k++){const p=Math.round(px+k*cell)+.5;x.moveTo(p,y);x.lineTo(p,y+h);}
+      for(let k=1;k<it.pxH;k++){const p=Math.round(y+k*cell)+.5;x.moveTo(px,p);x.lineTo(px+w,p);}x.stroke();}
+    if(scale>=14){x.strokeStyle=major;x.lineWidth=1.5;x.beginPath();
+      for(let k=1;k<it.inW-1e-6;k++){const p=px+k*scale;x.moveTo(p,y);x.lineTo(p,y+h);}
+      for(let k=1;k<it.inH-1e-6;k++){const p=y+k*scale;x.moveTo(px,p);x.lineTo(px+w,p);}x.stroke();}
+    x.strokeStyle=it.hot?gold:line;x.lineWidth=it.hot?2.5:1.5;x.strokeRect(px,y,w,h);
+    px+=Math.max(w,it.lw)+gap;
+  });
+}
+
+// ---------- flow ----------
+function renderSteps(){const el=$("steps");el.innerHTML="";
+  SCN.forEach((s,i)=>{const b=document.createElement("button");b.className="step"+(P.done[s.id]?" done":"");b.innerHTML=`<span class="dot"></span>${i+1}. ${s.title}`;
+    b.setAttribute("aria-current",i===cur);b.onclick=()=>load(i);el.appendChild(b);});
+  $("allDone").hidden=!SCN.every(s=>P.done[s.id]);}
+function load(i){cur=i;S=derive(fresh(i));const sc=SCN[i];
+  $("scnNum").textContent=`Scenario ${i+1} of ${SCN.length}`;$("scnTitle").textContent=sc.title;$("scnText").textContent=sc.text;$("scnGoal").textContent=sc.goal;
+  renderSteps();update();}
+function update(){derive(S);renderDialog();
+  const r=SCN[cur].check(S),fb=$("fb");let win=false;
+  if(r&&r.ok){win=true;fb.className="fb win";fb.innerHTML=r.msg;fb.hidden=false;
+    if(!P.done[SCN[cur].id]){P.done[SCN[cur].id]=true;saveP();renderSteps();}
+    $("next").hidden=cur>=SCN.length-1;}
+  else if(r){fb.className="fb hint";fb.textContent=r.msg;fb.hidden=false;$("next").hidden=true;}
+  else{fb.hidden=true;$("next").hidden=true;}
+  drawStage(win);}
+$("reset").onclick=()=>load(cur);
+$("next").onclick=()=>load(Math.min(SCN.length-1,cur+1));
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(update,120)});
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",update);
+let start=SCN.findIndex(s=>!P.done[s.id]);load(start<0?0:start);
+</script>
+
+</body>
+</html>

@@ -112,6 +112,9 @@ kbd{font:.75rem var(--mono);padding:1px 5px;border:1px solid var(--line);border-
 .cert-wrap{display:grid;gap:12px}
 .cert-wrap canvas{width:100%;max-width:900px;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff}
 .note{font-size:.95rem;color:var(--muted);max-width:65ch;margin:0}
+.nextup{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;margin-top:8px;padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.btn-next{display:inline-block;font:600 .95rem var(--body);padding:10px 16px;border-radius:6px;background:var(--gold);color:#000;text-decoration:none}
+.btn-next:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.meter b{transition:none}}
 </style>
 </head>
@@ -200,6 +203,7 @@ kbd{font:.75rem var(--mono);padding:1px 5px;border:1px solid var(--line);border-
       <div class="tools"><button class="primary" id="saveCert">Save certificate (PNG)</button></div>
       <div class="msg" id="saveMsg" role="status"></div>
       <p class="note" id="submitNote"><strong>To submit:</strong> save your certificate and upload it to the Canvas assignment.</p>
+      <div class="nextup"><div><div class="eyebrow">Next activity</div><strong>Image Size Explorer</strong><p class="note">Save your certificate first. Then see what Photoshop's Resample setting does to real images.</p></div><a class="btn-next" href="image-size.html">Open Image Size Explorer →</a></div>
     </div>
   </section>
 </div>
