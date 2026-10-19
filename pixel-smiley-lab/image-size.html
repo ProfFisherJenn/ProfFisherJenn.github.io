@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Image Size Explorer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="check.js" defer></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <style>
 html,body{margin:0}
@@ -84,7 +85,16 @@ button.primary{background:var(--gold);color:#000;border-color:var(--gold)}
 .stage-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font:.8rem var(--mono);color:var(--muted);margin:0 4px 6px}
 #stage{display:block;width:100%;height:auto}
 .legend{font-size:.85rem;color:var(--muted);margin:6px 4px 0}
-.alldone{margin-top:18px}
+.finish{display:grid;gap:18px;margin-top:22px}
+.checks{display:grid;gap:14px}
+.sech{margin:0;font:800 1.35rem var(--display)}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.cert-wrap{display:grid;gap:10px}
+.cert-wrap canvas{display:block;width:100%;max-width:820px;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff;margin-top:12px}
+.cert-wrap .submit{font-size:1.05rem;margin:0 0 4px;max-width:70ch}
+.msg{font-size:.92rem;margin-top:8px;min-height:1.2em}
+.msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+.fb.hint a{color:var(--gold-ink);font-weight:600}
 .navbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:24px}
 .navbar a{color:var(--gold-ink);font-weight:600}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -101,6 +111,7 @@ button.primary{background:var(--gold);color:#000;border-color:var(--gold)}
     <div class="rule"><b>Resample unchecked</b>Rearranges the pixels you have. The size in inches changes; the pixel count stays the same.</div>
     <div class="rule"><b>Resample checked</b>Adds or removes pixels. Use it to enlarge or reduce. Adding pixels never adds detail.</div>
     <div class="rule"><b>The equations</b>Number of Pixels ÷ Resolution = Inches<br>Inches × Resolution = Number of Pixels</div>
+    <div class="rule"><b>Real-world resolutions</b>72–96 ppi for screens · 200 ppi for print · 300 ppi for high-quality and glossy print. The smiley scenarios use 5–25 ppi only so you can see the pixels.</div>
   </div>
 
   <nav class="steps" id="steps" aria-label="Scenarios"></nav>
@@ -144,11 +155,33 @@ button.primary{background:var(--gold);color:#000;border-color:var(--gold)}
     </div>
   </section>
 
-  <div class="card alldone" id="allDone" hidden>
-    <div class="eyebrow">All scenarios complete</div>
-    <h2>You can read the Image Size dialog</h2>
-    <p>Before you resize anything, ask what you need to keep. Keep the pixels and Resample stays off. Need more or fewer pixels and Resample goes on. More pixels from resampling up never bring back detail that wasn't captured.</p>
-  </div>
+  <section id="finish" class="finish" hidden>
+    <div class="card alldone" id="allDone">
+      <div class="eyebrow">All scenarios complete</div>
+      <h2>You can read the Image Size dialog</h2>
+      <p>Before you resize anything, ask what you need to keep. Keep the pixels and Resample stays off. Need more or fewer pixels and Resample goes on. More pixels from resampling up never bring back detail that wasn't captured.</p>
+    </div>
+    <div class="checks">
+      <div>
+        <div class="eyebrow">Check your understanding</div>
+        <h2 class="sech">Two quick questions, then two short reflections</h2>
+      </div>
+      <div class="qgrid"><div id="eq1"></div><div id="eq2"></div></div>
+      <div id="r2"></div>
+      <div id="r3"></div>
+    </div>
+    <div class="card cert-wrap" id="certWrap" hidden>
+      <div class="eyebrow">Your certificate</div>
+      <h2>Download your certificate</h2>
+      <div id="certMissing" class="fb hint" hidden></div>
+      <div id="certReady" hidden>
+        <p class="submit"><strong>To submit:</strong> download your certificate and upload it to the <strong>Pixel Smiley Lab</strong> assignment in Canvas.</p>
+        <div class="row"><button class="primary" id="saveCert">Download certificate (PNG)</button></div>
+        <div class="msg" id="saveMsg" role="status"></div>
+        <canvas id="cert" width="1600" height="1200" aria-label="Your completion certificate"></canvas>
+      </div>
+    </div>
+  </section>
 
   <div class="navbar"><a href="index.html">← Back to Pixel Smiley Lab</a></div>
 </div>
@@ -371,7 +404,7 @@ function drawStage(win){
 function renderSteps(){const el=$("steps");el.innerHTML="";
   SCN.forEach((s,i)=>{const b=document.createElement("button");b.className="step"+(P.done[s.id]?" done":"");b.innerHTML=`<span class="dot"></span>${i+1}. ${s.title}`;
     b.setAttribute("aria-current",i===cur);b.onclick=()=>load(i);el.appendChild(b);});
-  $("allDone").hidden=!SCN.every(s=>P.done[s.id]);}
+  const all=SCN.every(s=>P.done[s.id]);$("finish").hidden=!all;if(all)mountFinish();}
 function load(i){cur=i;S=derive(fresh(i));const sc=SCN[i];
   $("scnNum").textContent=`Scenario ${i+1} of ${SCN.length}`;$("scnTitle").textContent=sc.title;$("scnText").textContent=sc.text;$("scnGoal").textContent=sc.goal;
   renderSteps();update();}
@@ -387,6 +420,100 @@ $("reset").onclick=()=>load(cur);
 $("next").onclick=()=>load(Math.min(SCN.length-1,cur+1));
 let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(update,120)});
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",update);
+
+// ---------- finish: questions, reflections, certificate ----------
+let finMounted=false;
+function mountFinish(){
+  if(!window.CHK){setTimeout(mountFinish,50);return;}
+  if(finMounted){updFinish();return;}finMounted=true;
+  CHK.mountQuestion($("eq1"),"eq1",updFinish);CHK.mountQuestion($("eq2"),"eq2",updFinish);
+  CHK.mountReflection($("r2"),"r2",updFinish);CHK.mountReflection($("r3"),"r3",updFinish);
+  updFinish();
+}
+function readLab(){try{const r=localStorage.getItem("pxsmiley3");return r?JSON.parse(r):null;}catch(e){return null;}}
+function updFinish(){
+  CHK.reload();
+  const mine=CHK.allDone(["eq1","eq2","r2","r3"]);$("certWrap").hidden=!mine;if(!mine)return;
+  const lab=readLab(),miss=[];
+  if(!lab||!lab.lv||!lab.lv.every(l=>l.done))miss.push("all four smiley levels");
+  if(!CHK.answered("r1"))miss.push("Reflection 1");
+  if(!CHK.answered("lq1")||!CHK.answered("lq2"))miss.push("Questions 1 and 2");
+  if(!lab||!lab.name)miss.push("your name");
+  $("certMissing").hidden=!miss.length;$("certReady").hidden=!!miss.length;
+  if(miss.length){$("certMissing").innerHTML=`Your certificate needs your Pixel Smiley Lab work too, and this browser is missing ${miss.join(", ")}. <a href="index.html">Finish the Pixel Smiley Lab</a> on this same computer and browser, then come back here.`;return;}
+  if(!P.certAt){P.certAt=Date.now();saveP();}
+  drawCert(lab);
+}
+function smileyPixels(n){const t=new Uint8Array(n*n),c=5/n,ss=n<=50?8:4;
+  for(let j=0;j<n;j++)for(let i=0;i<n;i++){let h=0;for(let a=0;a<ss;a++)for(let b=0;b<ss;b++)h+=inkSmiley(i*c+(a+.5)*c/ss,j*c+(b+.5)*c/ss);t[j*n+i]=h/(ss*ss)>=.25?1:0;}
+  return t;}
+function certCode(lab){const str=[lab.name,lab.completedAt,P.certAt,...lab.lv.map(l=>l.hit+"."+l.extra),JSON.stringify(CHK.st.ans),JSON.stringify(CHK.st.refl)].join("|");
+  let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+  const a=h.toString(36).toUpperCase().padStart(7,"0"),b=(P.certAt%46656).toString(36).toUpperCase().padStart(3,"0");
+  return `PX-${a.slice(0,4)}-${a.slice(4,7)}${b}`;}
+function wrapLines(x,text,maxW){const out=[];String(text).split(/\n+/).forEach(par=>{let line="";
+  par.split(/\s+/).filter(Boolean).forEach(w=>{const t=line?line+" "+w:w;if(x.measureText(t).width>maxW&&line){out.push(line);line=w;}else line=t;});out.push(line);});return out;}
+async function drawCert(lab){
+  try{await document.fonts.ready;}catch(e){}
+  const c=$("cert"),W=1600,M=70,F="'Bricolage Grotesque',system-ui,sans-serif",MO="'IBM Plex Mono',ui-monospace,monospace";
+  const INK="#17150f",MUT="#6b6553",GOLD="#f0b82d",GINK="#8a6400",OK="#2f7d4a",BAD="#c2412d",LINE="#ddd6c3",PAPER="#f6f4ee";
+  const lv=[{n:25,ppi:5},{n:50,ppi:10},{n:100,ppi:20},{n:125,ppi:25}];
+  function layout(x,draw){
+    let y=0;const txt=(t,f,col,px,py,align)=>{if(!draw)return;x.font=f;x.fillStyle=col;x.textAlign=align||"left";x.fillText(t,px,py);x.textAlign="left";};
+    const para=(t,f,col,px,maxW,lh)=>{x.font=f;const ls=wrapLines(x,t,maxW);ls.forEach((l,i)=>txt(l,f,col,px,y+lh*(i+1)-lh*.25));y+=ls.length*lh;};
+    if(draw){x.fillStyle="#fff";x.fillRect(0,0,W,c.height);x.fillStyle="#000";x.fillRect(0,0,W,130);x.fillStyle=GOLD;x.fillRect(0,130,W,10);x.textBaseline="alphabetic";}
+    txt("Pixel Smiley Lab",`800 54px ${F}`,"#fff",M,86);txt("+ Image Size Explorer · Certificate of completion",`600 22px ${MO}`,"#d8d2c0",W-M,82,"right");
+    txt("COMPLETED BY",`600 22px ${MO}`,MUT,M,210);txt(lab.name,`800 80px ${F}`,INK,M,292);
+    const dt=new Date(P.certAt);
+    txt(dt.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"})+" · "+dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}),`400 24px ${MO}`,MUT,M,340);
+    txt(certCode(lab),`600 30px ${MO}`,INK,W-M,292,"right");txt("completion code",`400 20px ${MO}`,MUT,W-M,340,"right");
+    y=400;
+    const section=(t)=>{if(draw){x.fillStyle=GOLD;x.fillRect(M,y+6,10,36);}txt(t,`800 36px ${F}`,INK,M+26,y+38);y+=70;};
+    const badge=(ok,cx,cy)=>{if(!draw)return;x.fillStyle=ok?OK:BAD;x.beginPath();x.arc(cx,cy,17,0,Math.PI*2);x.fill();x.strokeStyle="#fff";x.lineWidth=4;x.lineCap="round";x.beginPath();
+      if(ok){x.moveTo(cx-8,cy);x.lineTo(cx-2,cy+6);x.lineTo(cx+9,cy-7);}else{x.moveTo(cx-7,cy-7);x.lineTo(cx+7,cy+7);x.moveTo(cx+7,cy-7);x.lineTo(cx-7,cy+7);}x.stroke();};
+    const qRow=(id)=>{const q=CHK.Q[id],a=CHK.st.ans[id],ok=a===q.correct;badge(ok,M+18,y+22);
+      txt(`${q.num} · ${q.type}`,`600 20px ${MO}`,GINK,M+52,y+20);y+=30;
+      para(q.text,`600 26px ${F}`,INK,M+52,W-2*M-52,36);y+=4;
+      para(`Answered: ${q.opts[a]} · ${ok?"Correct":"Incorrect · Correct answer: "+q.opts[q.correct]}`,`400 22px ${MO}`,ok?OK:BAD,M+52,W-2*M-52,32);y+=26;};
+    const rBlock=(id)=>{const r=CHK.R[id],resp=CHK.st.refl[id]||"";
+      txt(r.num,`600 20px ${MO}`,GINK,M,y+20);y+=30;para(r.text,`italic 400 22px ${F}`,MUT,M,W-2*M,32);y+=12;
+      x.font=`400 25px ${F}`;const ls=wrapLines(x,resp,W-2*M-48),h=ls.length*38+36;
+      if(draw){x.fillStyle=PAPER;x.fillRect(M,y,W-2*M,h);x.fillStyle=GOLD;x.fillRect(M,y,5,h);}
+      ls.forEach((l,i)=>txt(l,`400 25px ${F}`,INK,M+28,y+18+38*(i+1)-10));y+=h+34;};
+    section("Part 1 · Pixel Smiley Lab");
+    const S0=300,gap=(W-2*M-S0*4)/3;
+    lv.forEach((L,i)=>{const px=Math.round(M+i*(S0+gap)),py=Math.round(y),st=lab.lv[i];
+      if(draw){const t=smileyPixels(L.n),cs=S0/L.n;x.fillStyle="#fff";x.fillRect(px,py,S0,S0);x.fillStyle=INK;
+        for(let k=0;k<t.length;k++)if(t[k])x.fillRect(px+Math.floor((k%L.n)*cs),py+Math.floor(Math.floor(k/L.n)*cs),Math.ceil(cs),Math.ceil(cs));
+        x.strokeStyle=GINK;x.lineWidth=1.5;x.beginPath();for(let q=1;q<5;q++){const p=q*S0/5;x.moveTo(px+p,py);x.lineTo(px+p,py+S0);x.moveTo(px,py+p);x.lineTo(px+S0,py+p);}x.stroke();
+        x.strokeStyle=LINE;x.lineWidth=2;x.strokeRect(px-1,py-1,S0+2,S0+2);}
+      let tot=0;smileyPixels(L.n).forEach(v=>tot+=v);
+      txt(`5 in × ${L.ppi} ppi = ${L.n} px`,`600 22px ${MO}`,INK,px,py+S0+38);
+      txt(`Painted ${st.hit} of ${tot} (${Math.round(st.hit/tot*100)}%)`,`400 19px ${MO}`,MUT,px,py+S0+68);});
+    y+=S0+110;
+    rBlock("r1");qRow("lq1");qRow("lq2");
+    y+=20;section("Part 2 · Image Size Explorer");
+    const colW=(W-2*M)/2;
+    SCN.forEach((sc,i)=>{const cx=M+(i%2)*colW,cy=y+Math.floor(i/2)*46;badge(!!P.done[sc.id],cx+18,cy+18);txt(`${i+1}. ${sc.title}`,`600 24px ${F}`,INK,cx+52,cy+27);});
+    y+=Math.ceil(SCN.length/2)*46+36;
+    qRow("eq1");qRow("eq2");rBlock("r2");rBlock("r3");
+    if(draw){x.fillStyle=LINE;x.fillRect(M,y,W-2*M,2);}y+=44;
+    txt("Real-world resolutions: 72–96 ppi for screens · 200 ppi for print · 300 ppi for high-quality and glossy print",`600 22px ${F}`,INK,M,y);y+=34;
+    txt("This lab used 5–25 ppi only so the pixels were big enough to see. Upload this file to the Pixel Smiley Lab assignment in Canvas.",`400 20px ${F}`,MUT,M,y);y+=50;
+    return y;}
+  const x=c.getContext("2d");c.width=W;c.height=4000;const H=Math.ceil(layout(x,false));c.height=H;layout(x,true);
+}
+let DL=null;
+(async()=>{try{DL=window.claude&&await window.claude.use("downloads");}catch(e){DL=null}})();
+$("saveCert").onclick=()=>{const m=$("saveMsg"),lab=readLab()||{};m.className="msg";m.textContent="";
+  $("cert").toBlob(async blob=>{
+    const fn=`PixelSmileyLab_${(lab.name||"student").replace(/[^A-Za-z0-9-]+/g,"_")}.png`;
+    if(!DL){try{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
+        m.className="msg ok";m.textContent=`Downloaded ${fn}. Now upload it to the Pixel Smiley Lab assignment in Canvas.`;}
+      catch(e){m.className="msg bad";m.textContent="Download didn't work here. Take a screenshot of the certificate and upload that instead.";}return;}
+    try{await DL.save({filename:fn,data:blob});m.className="msg ok";m.textContent=`Saved ${fn}. Now upload it to the Pixel Smiley Lab assignment in Canvas.`;}
+    catch(e){m.className="msg bad";m.textContent=e&&e.code==="declined"?"Download canceled.":"Download isn't available here. Take a screenshot of the certificate and upload that instead.";}
+  },"image/png");};
 let start=SCN.findIndex(s=>!P.done[s.id]);load(start<0?0:start);
 </script>
 

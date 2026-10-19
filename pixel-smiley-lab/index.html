@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pixel Smiley Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="check.js" defer></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <style>
 html,body{margin:0}
@@ -109,8 +110,11 @@ kbd{font:.75rem var(--mono);padding:1px 5px;border:1px solid var(--line);border-
 .tile h3{margin:8px 0 0;font:600 .95rem var(--mono)}
 .tile .sub{font:.8rem var(--mono);color:var(--muted)}
 .finish{display:grid;gap:22px}
-.cert-wrap{display:grid;gap:12px}
-.cert-wrap canvas{width:100%;max-width:900px;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff}
+.realppi{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:6px;padding:10px 14px;font-size:.92rem;max-width:80ch}
+.start .realppi{margin:0 0 18px}
+.checks{display:grid;gap:14px}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.btn-next[aria-disabled="true"]{opacity:.45;pointer-events:none}
 .note{font-size:.95rem;color:var(--muted);max-width:65ch;margin:0}
 .nextup{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;margin-top:8px;padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 .btn-next{display:inline-block;font:600 .95rem var(--body);padding:10px 16px;border-radius:6px;background:var(--gold);color:#000;text-decoration:none}
@@ -140,12 +144,15 @@ kbd{font:.75rem var(--mono);padding:1px 5px;border:1px solid var(--line);border-
       <li><strong>Paint the smiley.</strong> Click and drag to fill pixels. Hold Alt (Option on Mac) and drag to erase. Pick a bigger brush size when you need it.</li>
       <li><strong>Paint at least 25%.</strong> Once a quarter of the smiley's pixels are yours, click <strong>Fill in the answer</strong> to complete the level.</li>
       <li><strong>Repeat at 5, 10, 20 and 25 ppi.</strong> The canvas is 5 inches every time. Only the number of pixels changes.</li>
-      <li><strong>Save your certificate.</strong> At the end, download your certificate (PNG). You'll upload it to Canvas with a short reflection quiz.</li>
+      <li><strong>Compare and reflect.</strong> Look at all four smileys side by side, write a short reflection and answer two quick questions.</li>
+      <li><strong>Continue to the Image Size Explorer.</strong> Practice Photoshop's Image Size settings, then answer a few more questions.</li>
+      <li><strong>Download your certificate.</strong> At the end of the Image Size Explorer, download your certificate (PNG) and upload it to the <strong>Pixel Smiley Lab</strong> assignment in Canvas.</li>
     </ol>
+    <div class="realppi"><strong>Real-world resolutions:</strong> 72–96 ppi for screens · 200 ppi for print · 300 ppi for high-quality and glossy print. This lab uses very low resolutions (5–25 ppi) only so each pixel is big enough to see and paint.</div>
     <label for="nameIn">Your first name</label>
     <div class="row"><input id="nameIn" autocomplete="given-name" maxlength="40"><button class="primary" id="startBtn">Start</button></div>
     <div class="msg bad" id="nameMsg" role="status"></div>
-    <p class="fine">Your progress saves in this browser, so finish on the same computer.</p>
+    <p class="fine">Your progress and answers save in this browser. Do both activities on the same computer and browser, or your certificate won't have everything on it.</p>
   </section>
 
   <nav class="steps" id="steps" aria-label="Levels" hidden></nav>
@@ -197,14 +204,17 @@ kbd{font:.75rem var(--mono);padding:1px 5px;border:1px solid var(--line);border-
       <p class="note">Every square below is exactly 5 inches wide. The only thing that changed is how many pixels fit in each inch.</p>
     </div>
     <div class="gallery" id="gallery"></div>
-    <div class="cert-wrap">
-      <div class="eyebrow">Your certificate</div>
-      <canvas id="cert" width="1600" height="920" aria-label="Completion certificate"></canvas>
-      <div class="tools"><button class="primary" id="saveCert">Save certificate (PNG)</button></div>
-      <div class="msg" id="saveMsg" role="status"></div>
-      <p class="note" id="submitNote"><strong>To submit:</strong> save your certificate and upload it to the Canvas assignment.</p>
-      <div class="nextup"><div><div class="eyebrow">Next activity</div><strong>Image Size Explorer</strong><p class="note">Save your certificate first. Then see what Photoshop's Resample setting does to real images.</p></div><a class="btn-next" href="image-size.html">Open Image Size Explorer →</a></div>
+    <div class="realppi"><strong>Real-world resolutions:</strong> 72–96 ppi for screens · 200 ppi for print · 300 ppi for high-quality and glossy print. The 5–25 ppi used in this lab are only for seeing pixels; they're far too low for real work.</div>
+    <div class="checks">
+      <div>
+        <div class="eyebrow">Check your understanding</div>
+        <h2 style="margin:0;font:800 1.35rem var(--display)">Reflect, then answer two quick questions</h2>
+        <p class="note">Write your reflection while your smileys are in view. The questions appear after you submit it.</p>
+      </div>
+      <div id="r1"></div>
+      <div id="lqWrap" class="qgrid" hidden><div id="lq1"></div><div id="lq2"></div></div>
     </div>
+    <div class="nextup"><div><div class="eyebrow">Next activity</div><strong>Image Size Explorer</strong><p class="note" id="nextNote"></p></div><a class="btn-next" id="nextBtn" href="image-size.html" aria-disabled="true">Continue to Image Size Explorer →</a></div>
   </section>
 </div>
 
@@ -264,7 +274,7 @@ function renderSteps(){
     b.innerHTML=`<span class="dot"></span>${L.ppi} ppi`;b.disabled=!unlocked(i);b.setAttribute("aria-current",cur===i);
     b.onclick=()=>go(i);el.appendChild(b);});
   const b=document.createElement("button");b.className="step"+(allDone()?" done":"");b.disabled=!allDone();
-  b.innerHTML=`<span class="dot"></span>Compare + certificate`;b.setAttribute("aria-current",cur===4);b.onclick=()=>go(4);el.appendChild(b);
+  b.innerHTML=`<span class="dot"></span>Compare + reflect`;b.setAttribute("aria-current",cur===4);b.onclick=()=>go(4);el.appendChild(b);
 }
 function go(i){
   if(cur<4) persist();
@@ -366,7 +376,7 @@ function updProgress(){
   if(st.done){
     $("bar").style.width="100%";
     $("score").textContent=`You painted ${st.hit} of ${s.total} smiley pixels yourself (${Math.round(st.hit/s.total*100)}%).`;
-    $("doneBanner").textContent=cur<3?"Level complete. The next resolution is unlocked.":"All four levels complete. Open Compare + certificate.";
+    $("doneBanner").textContent=cur<3?"Level complete. The next resolution is unlocked.":"All four levels complete. Open Compare + reflect.";
     $("tFill").disabled=true;$("tShow").disabled=true;$("progHelp").hidden=true;return;
   }
   $("progHelp").hidden=false;$("tShow").disabled=!st.solved;
@@ -423,11 +433,6 @@ document.addEventListener("keydown",e=>{if(cur>3||$("labView").hidden||e.target.
   else if(code==="BracketLeft")changeSize(-1);else if(code==="BracketRight")changeSize(1);});
 
 // finish
-const LIGHT={surface:"#ffffff",ink:"#17150f",minor:"rgba(90,80,60,.28)",major:"#8a6400",guide:"rgba(23,21,15,.16)",gold:"#f0b82d",bad:"#c2412d"};
-function code(){const str=[S.name,S.completedAt,...S.lv.map(l=>l.hit+"."+l.extra)].join("|");
-  let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
-  const a=h.toString(36).toUpperCase().padStart(7,"0"),b=(S.completedAt%46656).toString(36).toUpperCase().padStart(3,"0");
-  return `PX-${a.slice(0,4)}-${a.slice(4,7)}${b}`;}
 function renderFinish(){
   const g=$("gallery");g.innerHTML="";
   LEVELS.forEach((L,i)=>{const st=S.lv[i],tot=count(target(L.n));
@@ -437,44 +442,31 @@ function renderFinish(){
     requestAnimationFrame(()=>{const c=d.querySelector("canvas"),W=Math.max(1,Math.round(d.querySelector(".frame").getBoundingClientRect().width*(window.devicePixelRatio||1)));
       c.width=c.height=W;paintCells(c.getContext("2d"),W,L.n,target(L.n),{inches:true});});
   });
-  drawCert();
+  const d=document.createElement("div");d.className="tile";
+  d.innerHTML=`<div class="frame"><canvas></canvas></div><h3>5 in × 300 ppi = 1,500 px</h3><div class="sub">2,250,000 pixels · actual print quality</div>`;g.appendChild(d);
+  requestAnimationFrame(()=>{const c=d.querySelector("canvas"),W=Math.max(1,Math.round(d.querySelector(".frame").getBoundingClientRect().width*(window.devicePixelRatio||1)));
+    c.width=c.height=W;const x=c.getContext("2d");x.fillStyle=css("--surface");x.fillRect(0,0,W,W);
+    x.save();x.scale(W/IN,W/IN);x.strokeStyle=css("--ink");x.fillStyle=css("--ink");x.lineWidth=.35;
+    x.beginPath();x.arc(2.5,2.5,2.125,0,Math.PI*2);x.stroke();x.beginPath();x.arc(1.75,1.85,.32,0,Math.PI*2);x.fill();x.beginPath();x.arc(3.25,1.85,.32,0,Math.PI*2);x.fill();
+    x.beginPath();x.arc(2.5,2.55,1.15,25*Math.PI/180,155*Math.PI/180);x.stroke();x.restore();
+    x.strokeStyle=css("--major");x.lineWidth=Math.max(1,W/300);x.beginPath();for(let k=1;k<IN;k++){const p=k*W/IN;x.moveTo(p,0);x.lineTo(p,W);x.moveTo(0,p);x.lineTo(W,p);}x.stroke();});
+  mountChecks();
 }
-async function drawCert(){
-  try{await document.fonts.ready;}catch(e){}
-  const c=$("cert"),x=c.getContext("2d"),W=1600,H=920,F="'Bricolage Grotesque',system-ui,sans-serif",M="'IBM Plex Mono',ui-monospace,monospace";
-  x.fillStyle="#ffffff";x.fillRect(0,0,W,H);
-  x.fillStyle="#000";x.fillRect(0,0,W,130);x.fillStyle="#f0b82d";x.fillRect(0,130,W,10);
-  x.fillStyle="#fff";x.font=`800 54px ${F}`;x.textBaseline="middle";x.fillText("Pixel Smiley Lab",60,66);
-  x.textAlign="right";x.font=`600 26px ${M}`;x.fillStyle="#d8d2c0";x.fillText("Certificate of completion",W-60,66);x.textAlign="left";
-  x.textBaseline="alphabetic";x.fillStyle="#6b6553";x.font=`600 24px ${M}`;x.fillText("COMPLETED BY",60,210);
-  x.fillStyle="#17150f";x.font=`800 84px ${F}`;x.fillText(S.name||"",60,295);
-  const dt=new Date(S.completedAt||Date.now());
-  x.fillStyle="#6b6553";x.font=`400 26px ${M}`;
-  x.fillText(dt.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"})+" · "+dt.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}),60,345);
-  x.textAlign="right";x.fillStyle="#17150f";x.font=`600 30px ${M}`;x.fillText(code(),W-60,295);
-  x.fillStyle="#6b6553";x.font=`400 20px ${M}`;x.fillText("completion code",W-60,345);x.textAlign="left";
-  const S0=330,gap=(W-120-S0*4)/3;
-  LEVELS.forEach((L,i)=>{const px=60+i*(S0+gap),py=400,tot=count(target(L.n)),st=S.lv[i];
-    const off=document.createElement("canvas");off.width=off.height=S0;
-    paintCells(off.getContext("2d"),S0,L.n,target(L.n),{inches:true,pal:LIGHT,D:1});
-    x.drawImage(off,px,py);x.strokeStyle="#ddd6c3";x.lineWidth=2;x.strokeRect(px-1,py-1,S0+2,S0+2);
-    x.fillStyle="#17150f";x.font=`600 24px ${M}`;x.fillText(`5 in × ${L.ppi} ppi = ${L.n} px`,px,py+S0+42);
-    x.fillStyle="#6b6553";x.font=`400 20px ${M}`;x.fillText(`Painted ${st.hit} of ${tot} (${Math.round(st.hit/tot*100)}%)`,px,py+S0+74);
-  });
-  x.fillStyle="#17150f";x.font=`600 26px ${F}`;
-  x.fillText("Same 5 in × 5 in every time. More pixels per inch, smoother edges.",60,H-50);
+let checksMounted=false;
+function mountChecks(){
+  if(!window.CHK){setTimeout(mountChecks,50);return;}
+  if(checksMounted){updChecks();return;}checksMounted=true;
+  CHK.mountReflection($("r1"),"r1",updChecks);
+  CHK.mountQuestion($("lq1"),"lq1",updChecks);CHK.mountQuestion($("lq2"),"lq2",updChecks);
+  updChecks();
 }
-let DL=null;
-(async()=>{try{DL=window.claude&&await window.claude.use("downloads");}catch(e){DL=null}
-})();
-$("saveCert").onclick=()=>{const m=$("saveMsg");m.className="msg";m.textContent="";
-  $("cert").toBlob(async blob=>{
-    const fn=`PixelSmiley_${(S.name||"student").replace(/[^A-Za-z0-9-]+/g,"_")}.png`;
-    if(!DL){try{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
-        m.className="msg ok";m.textContent=`Downloaded ${fn}. Upload it to Canvas.`;}catch(e){m.className="msg bad";m.textContent="Download didn't work here. Take a screenshot of the certificate instead.";}return;}
-    try{await DL.save({filename:fn,data:blob});m.className="msg ok";m.textContent=`Saved ${fn}. Upload it to Canvas.`;}
-    catch(e){m.className="msg bad";m.textContent=e&&e.code==="declined"?"Save canceled.":"Saving isn't available here. Take a screenshot of the certificate instead.";}
-  },"image/png");};
+function updChecks(){
+  $("lqWrap").hidden=!CHK.answered("r1");
+  const done=CHK.allDone(["r1","lq1","lq2"]);
+  $("nextBtn").setAttribute("aria-disabled",String(!done));
+  $("nextNote").innerHTML=(done?"Nice work. Continue to the Image Size Explorer. ":"Finish the reflection and both questions to continue. ")+
+    "Your certificate is at the end of the Image Size Explorer. Download it there and upload it to the <strong>Pixel Smiley Lab</strong> assignment in Canvas.";
+}
 
 let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{if(cur===4&&!$("finView").hidden)renderFinish();else if(!$("labView").hidden)sizeCanvas();},120)});
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{if(cur===4)renderFinish();else draw();});
