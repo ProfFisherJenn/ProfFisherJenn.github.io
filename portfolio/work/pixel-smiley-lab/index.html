@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pixel Smiley Lab · Case Study · Jenn Fisher</title>
+  <meta name="description" content="Case study: an interactive learning experience that teaches image resolution and resampling through painting, guided practice with diagnostic feedback, and a working simulation of Photoshop's Image Size dialog.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/case-study.css">
+</head>
+<body class="case-study-page">
+
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="site-header">
+    <nav class="site-nav" aria-label="Main">
+      <a class="site-name" href="../../index.html">Jenn Fisher</a>
+      <ul class="site-nav-links">
+        <li><a href="../../index.html">Home</a></li>
+        <li><a href="../../index.html#work" aria-current="page">Work</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ===== Hero ===== -->
+    <section class="case-hero" aria-labelledby="case-title">
+      <div class="case-hero-inner">
+        <p class="eyebrow">Case study · Learning experience design</p>
+        <h1 id="case-title">Pixel Smiley Lab</h1>
+        <p class="case-lede">A three-stage interactive lab that makes image resolution something students feel, practice and apply, instead of a formula they memorize and forget. Built for an introductory Photoshop course at a community college.</p>
+
+        <div class="case-actions">
+          <a class="button button-primary" href="https://proffisherjenn.github.io/pixel-smiley-lab/" target="_blank" rel="noopener">Try it live <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens in a new tab)</span></a>
+          <a class="button button-secondary" href="#solution">See the solution</a>
+        </div>
+
+        <dl class="case-meta">
+          <div class="case-meta-item">
+            <dt>Role</dt>
+            <dd>Learning experience designer, instructor and product owner</dd>
+          </div>
+          <div class="case-meta-item">
+            <dt>Learners</dt>
+            <dd>GRD-159 Raster Imaging students, in person and online</dd>
+          </div>
+          <div class="case-meta-item">
+            <dt>Timeline</dt>
+            <dd>Fall 2026, designed and iterated during the live course</dd>
+          </div>
+          <div class="case-meta-item">
+            <dt>Built with</dt>
+            <dd>HTML, CSS and JavaScript on GitHub Pages, embedded in Canvas LMS</dd>
+          </div>
+        </dl>
+      </div>
+
+      <figure class="case-figure case-figure-hero">
+        <img src="images/stage-1-lab-compare-smileys.png" width="1440" height="900"
+             alt="The Pixel Smiley Lab compare screen: the same 5-inch smiley painted at 5, 10, 20 and 25 pixels per inch, with a 300 ppi version for reference. The low-resolution smileys are visibly blocky and the high-resolution ones have smooth curves.">
+        <figcaption>The payoff moment: one smiley, five resolutions, all exactly 5 inches wide. Students paint the first four themselves.</figcaption>
+      </figure>
+    </section>
+
+    <!-- ===== At a glance / page nav ===== -->
+    <nav class="case-toc" aria-label="On this page">
+      <ol>
+        <li><a href="#problem">Problem</a></li>
+        <li><a href="#role">My role</a></li>
+        <li><a href="#process">Process</a></li>
+        <li><a href="#solution">Solution</a></li>
+        <li><a href="#outcome">Outcome</a></li>
+      </ol>
+    </nav>
+
+    <!-- ===== 1. Problem ===== -->
+    <section class="case-section" id="problem" aria-labelledby="problem-title">
+      <p class="section-number">01</p>
+      <h2 id="problem-title">Problem</h2>
+      <p class="section-summary">Resolution and resampling are the first technical concepts in the course, and the ones students struggle with longest. Watching the math solved on a slide wasn't building understanding.</p>
+
+      <ul class="key-points">
+        <li><strong>The concept is abstract.</strong> "Pixels per inch" means nothing until you see that a pixel has no fixed size. Students could recite the formula and still not know when to check <em>Resample</em> in Photoshop.</li>
+        <li><strong>Mistakes are costly later.</strong> Students pulled free stock images straight into layouts without checking dimensions. Files ballooned, and some uploads to Canvas took 20+ minutes.</li>
+        <li><strong>Existing feedback came too late.</strong> The Canvas quiz only revealed right and wrong answers after submission, so students practiced misconceptions for a full attempt.</li>
+        <li><strong>Assessment tooling fought the content.</strong> Fill-in-the-blank questions marked "42 in" wrong when the answer was 42, so the quiz punished formatting, not understanding.</li>
+      </ul>
+
+      <div class="callout">
+        <p class="callout-label">Design challenge</p>
+        <p>How might students build an intuition for resolution, practice the math with immediate, specific feedback, and apply it in Photoshop, without adding grading work for one instructor teaching two sections?</p>
+      </div>
+    </section>
+
+    <!-- ===== 2. My role ===== -->
+    <section class="case-section" id="role" aria-labelledby="role-title">
+      <p class="section-number">02</p>
+      <h2 id="role-title">My role</h2>
+      <p class="section-summary">I owned the experience end to end, from learning objectives to classroom testing.</p>
+
+      <ul class="role-list">
+        <li><strong>Learning design:</strong> objectives, sequencing, practice items, feedback copy and reflection prompts</li>
+        <li><strong>Interaction and UX design:</strong> the painting mechanic, the Image Size simulation, the progressive-disclosure worksheet and the completion certificate</li>
+        <li><strong>Assessment strategy:</strong> a low-grading-overhead model built around a downloadable certificate graded complete/incomplete</li>
+        <li><strong>Research and iteration:</strong> classroom observation, student reflections and in-class debriefs across in-person and online sections</li>
+        <li><strong>Production:</strong> built as a static web app with AI-assisted development; I directed the design, wrote the content and reviewed every iteration</li>
+      </ul>
+      <p class="placeholder-note">[Placeholder: adjust the production line to describe your build process in your own words.]</p>
+    </section>
+
+    <!-- ===== 3. Process ===== -->
+    <section class="case-section" id="process" aria-labelledby="process-title">
+      <p class="section-number">03</p>
+      <h2 id="process-title">Process</h2>
+      <p class="section-summary">Five design moves, each prompted by something students did or said.</p>
+
+      <ol class="process-steps">
+        <li class="process-step">
+          <h3>Start with a question students can't answer yet</h3>
+          <p>I open the unit by asking, "What size is a pixel?" The honest answer, "it depends on the resolution," became the premise of the lab. Students paint the same smiley on a 5-inch canvas at four resolutions. At 5 ppi, the curve fights them; at 25 ppi, it almost draws itself.</p>
+          <p class="decision"><strong>Key decision:</strong> students paint only 25% of each smiley before they can auto-fill the rest. That's enough struggle to feel the difference, without turning a concept lesson into a coloring assignment.</p>
+          <figure class="case-figure">
+            <img src="images/stage-1-lab-painting-in-progress.png" width="1440" height="900" loading="lazy"
+                 alt="Level 3 of the Pixel Smiley Lab at 20 ppi. The student has traced part of the smiley's outline on a fine pixel grid, and the progress meter shows 30 percent painted with the Fill in the answer button unlocked.">
+            <figcaption>Each level unlocks only after the student solves the resolution equation, so the math and the visual always arrive together.</figcaption>
+          </figure>
+        </li>
+
+        <li class="process-step">
+          <h3>Simulate the real tool, safely</h3>
+          <p>Understanding pixels wasn't enough; students had to transfer it to Photoshop's Image Size dialog. I designed a working replica with six guided scenarios, including an "enlarge trap" that shows resampling up adds pixels but never detail, and a real-world case built from the oversized stock images students actually used.</p>
+          <figure class="case-figure">
+            <img src="images/stage-3-explorer-resample-hint.png" width="1440" height="1240" loading="lazy"
+                 alt="The Image Size Explorer showing a replica of Photoshop's Image Size dialog. The student left Resample checked, and a hint explains that the pixel dimensions jumped to 125 by 125 and that unchecking Resample would rearrange the existing pixels instead.">
+            <figcaption>A wrong move in the simulator produces a specific explanation, not just "incorrect," and the before/after images are drawn at true relative size.</figcaption>
+          </figure>
+        </li>
+
+        <li class="process-step">
+          <h3>Let the evidence kill an idea</h3>
+          <p>Reflections kept saying the same thing: students understood pixel density but still didn't get "resample." My first fix was an analogy, comparing pixels to mosaic tiles. Reviewing it, I saw it framed resolution as spacing, which contradicted what the lab had already taught well: more pixels per inch means smaller pixels.</p>
+          <p class="decision"><strong>Key decision:</strong> I dropped explanation in favor of action. The lesson now teaches three rules students can apply with the dialog open: set resolution first with Resample off, change size second with Resample on, and never upsample.</p>
+        </li>
+
+        <li class="process-step">
+          <h3>Learn from the low-tech version</h3>
+          <p>An in-class paper worksheet, where students resized real images and recorded what Photoshop showed them, resolved more confusion than any explanation had. When I asked why, one student summed it up:</p>
+          <blockquote class="student-quote">
+            <p>"Because I actually had to do it myself, on paper."</p>
+            <footer>GRD-159 student, Fall 2026</footer>
+          </blockquote>
+          <p>Online students needed the same experience. I rebuilt the worksheet as an interactive page that keeps the paper version's table layout but checks every answer as students go.</p>
+          <figure class="case-figure">
+            <img src="images/stage-2-worksheet-table-incorrect-feedback.png" width="1440" height="441" loading="lazy"
+                 alt="A worksheet table for an 1800 by 1200 pixel image at 72, 120 and 300 ppi. Five answers are correct and locked with checkmarks. The 300 ppi width shows 540000 marked wrong, with feedback saying the student multiplied 1800 by 300 and should divide pixels by resolution instead.">
+            <figcaption>Correct cells lock; the feedback diagnoses the mistake ("looks like you multiplied") instead of just marking it wrong.</figcaption>
+          </figure>
+        </li>
+
+        <li class="process-step">
+          <h3>Design the feedback around real mistakes</h3>
+          <p>I catalogued the errors I'd seen students make in class, then wrote a targeted response for each one:</p>
+          <ul class="error-list">
+            <li>Multiplying instead of dividing, or dividing in the wrong order (72 ÷ 1800)</li>
+            <li>Entering pixels where inches were asked for, or the reverse</li>
+            <li>Swapping width and height, or using the wrong row's resolution</li>
+            <li>Photoshop set to centimeters or pixels per centimeter</li>
+            <li>Resample checked or unchecked on the wrong step, detected from the exact numbers it produces</li>
+          </ul>
+          <p class="decision"><strong>Key decision:</strong> unlimited retries, a hint after two misses, and the answer after three, but students still have to type it to move on. Fields accept only numbers, which ends the "42 in" problem.</p>
+          <figure class="case-figure">
+            <img src="images/stage-2-worksheet-resample-feedback.png" width="1440" height="1151" loading="lazy"
+                 alt="Part 2 of the worksheet for Icecream.jpg. The original values are correct. In Step 1 the student entered 20833 by 20833 pixels at 69.444 inches, and the feedback explains that this is what happens when Resample is checked, then suggests File Revert. A hint below reminds them that changing resolution shouldn't change the pixel count.">
+            <figcaption>The worksheet never tells students when to resample. It only names the setting after the numbers show they got it wrong.</figcaption>
+          </figure>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ===== 4. Solution ===== -->
+    <section class="case-section" id="solution" aria-labelledby="solution-title">
+      <p class="section-number">04</p>
+      <h2 id="solution-title">Solution</h2>
+      <p class="section-summary">One link, three stages, one certificate. In-person students do the worksheet on paper and enter a class code; online students and anyone who missed class complete it interactively.</p>
+
+      <div class="stage">
+        <div class="stage-text">
+          <p class="stage-label">Stage 1</p>
+          <h3>Pixel Smiley Lab: feel it</h3>
+          <p>Solve the equation, paint the smiley, compare all four resolutions side by side, then reflect. Two check-your-understanding questions follow the reflection, so students write before they're quizzed.</p>
+        </div>
+        <div class="figure-grid">
+          <figure class="case-figure">
+            <img src="images/stage-1-lab-start-screen.png" width="1440" height="1565" loading="lazy"
+                 alt="The Pixel Smiley Lab start screen asking 'What size is a pixel?', with a visual of one inch divided four ways, a numbered how-it-works list, a name field filled in with Sample Student and a course section choice.">
+            <figcaption>The start screen frames the question and sets expectations, including the certificate at the end.</figcaption>
+          </figure>
+          <figure class="case-figure">
+            <img src="images/stage-1-lab-equation-incorrect-feedback.png" width="1440" height="900" loading="lazy"
+                 alt="Level 1 of the lab with the canvas locked. The student answered 5 for '5 inches times 5 ppi equals how many pixels', and the feedback reads 'Not quite. Pixels equals inches times pixels per inch.'">
+            <figcaption>The canvas stays locked until the math is right.</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-text">
+          <p class="stage-label">Stage 2</p>
+          <h3>Resolution Worksheet: practice it</h3>
+          <p>Resolution math in tables that mirror the paper version, then three real images resized in Photoshop, ending with a client scenario where the right answer is "this image isn't big enough."</p>
+        </div>
+        <figure class="case-figure case-figure-lead">
+          <img src="images/stage-2-worksheet-opening.png" width="1440" height="900" loading="lazy"
+               alt="The Resolution Worksheet opening screen. A short introduction explains that students enter numbers only, get instant feedback with unlimited tries, see a hint after two tries and the answer after three. Both resolution equations are shown, followed by Part 1's first table.">
+          <figcaption>The opening screen sets the rules up front: numbers only, instant feedback, help that escalates.</figcaption>
+        </figure>
+        <div class="figure-grid">
+          <figure class="case-figure">
+            <img src="images/stage-2-worksheet-comparison-card.png" width="1440" height="373" loading="lazy"
+                 alt="A comparison card titled 'Same pixels, different resolution' showing Image 1 width at 72, 120 and 300 ppi as 25, 15 and 6 inches, and Image 2 as 50, 30 and 12 inches, with the rule that inches go down as resolution goes up.">
+            <figcaption>After both tables, a comparison card states the pattern students just produced.</figcaption>
+          </figure>
+          <figure class="case-figure">
+            <img src="images/stage-2-worksheet-client-scenario.png" width="1440" height="655" loading="lazy"
+                 alt="The end of the worksheet's client scenario. The student answered No to whether the image can fill a 16-inch poster width at 300 ppi, calculated that it needs 4800 pixels, and wrote a response to the client explaining it only covers 10 inches.">
+            <figcaption>The final task asks for professional judgment, not just a number: what would you tell the client?</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-text">
+          <p class="stage-label">Stage 3</p>
+          <h3>Image Size Explorer: apply it</h3>
+          <p>Six scenarios in a working replica of Photoshop's Image Size dialog. Every image is drawn at true relative size, so students see a resample decision change both the pixels and the physical print.</p>
+        </div>
+        <figure class="case-figure case-figure-lead">
+          <img src="images/stage-3-explorer-opening.png" width="1440" height="1240" loading="lazy"
+               alt="The Image Size Explorer opening screen: four rule cards about Resample and the resolution equations, a row of six scenario tabs, the first scenario's goal, a replica of Photoshop's Image Size dialog, and before and after views of a 25 by 25 pixel smiley.">
+          <figcaption>The first scenario, with the rules, the dialog and the true-scale stage all visible at once.</figcaption>
+        </figure>
+        <div class="figure-grid">
+          <figure class="case-figure">
+            <img src="images/stage-3-explorer-enlarge-trap.png" width="1440" height="1240" loading="lazy"
+                 alt="The enlarge trap scenario. The 5 ppi smiley resampled to 25 ppi shows 125 by 125 pixels but is exactly as blocky as before, displayed next to the smiley the student painted at a true 25 ppi.">
+            <figcaption>The enlarge trap: Photoshop reports more pixels, but the image is no sharper than before.</figcaption>
+          </figure>
+          <figure class="case-figure">
+            <img src="images/stage-3-explorer-stock-background.png" width="1440" height="1240" loading="lazy"
+                 alt="The final scenario: a 16-foot stock background resized to 8.5 inches tall at 300 ppi, dropping from 273 megabytes to 37 megabytes, shown at true scale next to the flyer it's meant for.">
+            <figcaption>The last scenario is built from a real classroom problem: oversized stock photos that took 20+ minutes to upload.</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="stage stage-split">
+        <div class="stage-text">
+          <p class="stage-label">Completion</p>
+          <h3>A certificate instead of a gradebook</h3>
+          <p>Students download one PNG certificate and upload it to Canvas. It shows their painted smileys, every answer, every reflection and their worksheet completion, with a code to discourage editing. Grading is complete/incomplete, and the reflections give me a fast read on where the class is still confused.</p>
+          <p>The whole experience is responsive, so students can review on a phone, though painting and Photoshop work happen at a computer.</p>
+        </div>
+        <div class="figure-pair">
+          <figure class="case-figure case-figure-certificate">
+            <img src="images/completion-certificate.png" width="1600" height="2940" loading="lazy"
+                 alt="The completion certificate for Sample Student, showing the four painted smileys, answers to four questions marked correct, three written reflections, the Resolution Worksheet parts marked complete with the client response, and all six Image Size Explorer scenarios checked off.">
+            <figcaption>The downloadable certificate, generated in the browser.</figcaption>
+          </figure>
+          <figure class="case-figure case-figure-mobile">
+            <img src="images/mobile-worksheet-feedback-390.png" width="390" height="844" loading="lazy"
+                 alt="The worksheet on a 390-pixel-wide phone screen. The table fits the screen, one cell is marked wrong, and feedback explains that the student entered the pixel count where inches were asked for.">
+            <figcaption>Mobile, 390 px wide.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5. Outcome ===== -->
+    <section class="case-section" id="outcome" aria-labelledby="outcome-title">
+      <p class="section-number">05</p>
+      <h2 id="outcome-title">Outcome</h2>
+      <p class="section-summary">Early signals are strong; quiz data is coming in now.</p>
+
+      <ul class="metrics" aria-label="Key results">
+        <li class="metric placeholder">
+          <span class="metric-value">[XX%]</span>
+          <span class="metric-label">Completion rate</span>
+          <span class="metric-note">[Placeholder: students who submitted a certificate ÷ students enrolled]</span>
+        </li>
+        <li class="metric placeholder">
+          <span class="metric-value">[XX%]</span>
+          <span class="metric-label">Error reduction</span>
+          <span class="metric-note">[Placeholder: change in incorrect answers on the Image Sizing quiz versus the previous term]</span>
+        </li>
+        <li class="metric placeholder">
+          <span class="metric-value">[XX fewer]</span>
+          <span class="metric-label">Student questions</span>
+          <span class="metric-note">[Placeholder: resolution and resampling questions per term, before and after]</span>
+        </li>
+      </ul>
+
+      <ul class="key-points">
+        <li><strong>Students responded positively.</strong> When I asked the class what they thought of the activities, the feedback was strongly positive.</li>
+        <li><strong>The answer review was quiet, in a good way.</strong> When we went over the worksheet together, almost no wrong answers came up.</li>
+        <li><strong>One experience, two modalities.</strong> In-person and online students now complete the same activity through one link, and absent students have a path that doesn't depend on catching up in class.</li>
+      </ul>
+
+      <div class="quote-grid">
+        <blockquote class="student-quote placeholder">
+          <p>"[Placeholder: anonymized reflection quote about what clicked.]"</p>
+          <footer>GRD-159 student, [semester]</footer>
+        </blockquote>
+        <blockquote class="student-quote placeholder">
+          <p>"[Placeholder: anonymized reflection quote about resampling or the painting levels.]"</p>
+          <footer>GRD-159 student, [semester]</footer>
+        </blockquote>
+      </div>
+
+      <div class="callout">
+        <p class="callout-label">What I'd do next</p>
+        <ul>
+          <li>Compare this term's Image Sizing quiz results with prior terms to measure error reduction.</li>
+          <li>Add more interactive pages to the lab, starting with cropping and canvas size.</li>
+          <li>Reuse the diagnostic-feedback pattern in other courses where students practice calculations.</li>
+        </ul>
+      </div>
+
+      <div class="case-actions case-actions-end">
+        <a class="button button-primary" href="https://proffisherjenn.github.io/pixel-smiley-lab/" target="_blank" rel="noopener">Try Pixel Smiley Lab <span aria-hidden="true">↗</span><span class="visually-hidden"> (opens in a new tab)</span></a>
+        <a class="button button-secondary" href="../../index.html#work">Back to all work</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Jenn Fisher</p>
+  </footer>
+
+</body>
+</html>
